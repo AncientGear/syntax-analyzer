@@ -1,0 +1,67 @@
+footer {
+  color: white  ;
+  width: 100%;
+  height: 0px;
+  text-align: center;
+  border-color: black;
+  margin-top: 10px;
+
+}
+
+#saul {
+  display: inline-block;
+}
+
+.footer {
+  background-color: #394863;
+}
+
+.terms{
+  color: white;
+}
+
+.saul {
+  display: inline;
+  padding: 5px;
+  padding-left: 5px;
+  margin: 5px;
+}
+
+.redes ul{
+   padding-right: 0px;
+   padding-left: 0px;
+   padding-bottom: 0px;
+   padding-top: 0px;
+   margin: 0px;
+}
+
+.redes li{
+   list-style-type: none;
+   display: inline;
+   padding-right: 5px;
+}
+
+.facebook {
+  width: 2%;
+}
+
+.github {
+  width: 1.5%;
+}
+
+.instagram {
+  width: 2.5%;
+}
+
+.linkedin {
+  width: 2%;
+}
+
+.mail{
+  float: left;
+  display: inline;
+}
+
+.correo{
+  width: 1.5%;
+}
