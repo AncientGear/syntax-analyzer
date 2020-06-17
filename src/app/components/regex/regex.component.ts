@@ -6,7 +6,9 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./regex.component.css']
 })
 export class RegexComponent implements OnInit {
-  code: any[];
+  code = [];
+  tokensForTxt = [];
+  txt: string;
   tokens = [];
   tokenErrors = [];
   possibleTokens = {
@@ -50,7 +52,7 @@ export class RegexComponent implements OnInit {
       id: 'NF',
       counter: 0
     },
-    identifiers: {
+    identifier: {
       id: 'ID',
       counter: 0,
       options: []
@@ -69,11 +71,13 @@ export class RegexComponent implements OnInit {
     IR: 'Condition Error',
     NF: 'Not Found'
   };
-  vairablesRegEx = /[a-zA-Z][\w$]*/;
+  charRegEx = /[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬,-]*/;
+  vairablesRegEx = /^[a-zA-Z][\w$]*/;
+  numbersRegEx = /[\d]*[.]*[\d]*/;
+  arimeticOpRegEx = /^[+-\/*]/;
   constructor() { }
 
-  ngOnInit(): void {
-  }
+  ngOnInit(): void {}
 
   uploadFile(event: any): void {
     const file = (event.target as HTMLInputElement).files[0];
@@ -97,19 +101,41 @@ export class RegexComponent implements OnInit {
     this.inizializeCounters();
     // tslint:disable-next-line: prefer-for-of
     let line = 1;
-    while (this.code.length > 0) {
+    for (let i = 0; i < this.code.length; i++) {
+
       const code = this.code.shift();
-      if (code === undefined) {
-        break;
-      }
 
       if (this.isDeclaration(code)) {
         await this.declaration(code, line);
       } else if (this.isAssignation(code)) {
-        await this.assignation();
+        await this.assignation(code, line);
+      }
+      if (this.code === undefined) {
+        break;
       }
       line++;
+      i--;
+      this.tokensForTxt.push('\n');
     }
+
+    for (let i = 0; i < this.tokens.length; i++) {
+      if (JSON.stringify(this.tokens[i]) === '{}') {
+        delete this.tokens[i];
+        i--;
+      }
+    }
+    console.log(this.tokens);
+
+    this.txt = this.tokensForTxt.join(' ');
+
+    this.download();
+  }
+
+
+  download() {
+    const element = document.getElementById('download');
+
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(this.txt));
 
   }
 
@@ -124,10 +150,11 @@ export class RegexComponent implements OnInit {
     tokens.miscellaneous.counter = 0;
     tokens.relationalsOperators.counter = 0;
     tokens.notFound.counter = 0;
-    tokens.identifiers.counter = 0;
+    tokens.identifier.counter = 0;
   }
 
   async declaration(code: string, line: number) {
+    let wordToCompare = '';
 
     let type = await this.verifyType(code);
     type = this.possibleTokens.dateTypes.options[type] || code.split(' ')[0];
@@ -135,36 +162,157 @@ export class RegexComponent implements OnInit {
     await this.generateToken('dateTypes', type, line);
     let codeToCompare = code.split(type)[1].replace(/ /g, '');
 
-    while (codeToCompare.match(/[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬,;-]+/)) {
-      let wordToCompare = codeToCompare.match(/[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬,;-]+/)[0];
+    while (codeToCompare.match(/[\w$_(){}["!#%&\/?='¡¿*΅~^`<>|°¬,;-]+/)) {
+
+      wordToCompare = codeToCompare.match(/[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬,-]+/)[0];
       codeToCompare = codeToCompare.replace(wordToCompare, '');
+      if(codeToCompare.length === 0 ){
+        break;
+      }
 
       await this.postIdentifier(wordToCompare, line);
 
-      wordToCompare = codeToCompare.split('')[0];
-      // codeToCompare = codeToCompare.replace('.', '');
+      wordToCompare = codeToCompare.match(/./)[0];
+      codeToCompare = codeToCompare.replace(/./, '');
+
+      if(codeToCompare.length === 0 ){
+        break;
+      }
 
       await this.postAssignation(wordToCompare, line);
-      console.log('tokens' + this.tokens);
-      console.log('Code' + codeToCompare);
-      console.log('Word' + wordToCompare);
 
+      wordToCompare = codeToCompare.match(/[a-zA-Z0-9$_()\.{}["!#%&\/?'¡¿*΅~^`<>|°¬-]+/)[0];
+      const possibleColon = wordToCompare.split('')[0];
 
-      console.log(codeToCompare.match(/[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬-]+/)[0]);
+      if(possibleColon === '\'') {
+        await this.postChar(wordToCompare, line);
+      } else if (Number(wordToCompare)) {
+        await this.postNumber(wordToCompare, line);
+      } else {
+        await this.postIdentifier(wordToCompare, line);
+      }
+      codeToCompare = codeToCompare.replace(wordToCompare, '');
+      wordToCompare = codeToCompare.match(/./)[0];
 
-      await this.postAssignation(wordToCompare, line);
-      console.log('1');
+      if(codeToCompare.length === 0 ){
+        break;
+      }
+
+      if (wordToCompare !== ';') {
+        codeToCompare = codeToCompare.replace(/./, '');
+        await this.postColon(wordToCompare, line);
+      } else {
+        this.postSemiColon(wordToCompare, line);
+        break;
+      }
+    }
+  }
+
+  async assignation(code: string, line: number) {
+
+    let codeToCompare = code.replace(/[ ]/g, '');
+    let wordToCompare = codeToCompare.match(/[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬-]+/)[0];
+    codeToCompare = codeToCompare.replace(wordToCompare, '');
+    console.log('1' + wordToCompare);
+
+    await this.postIdentifier(wordToCompare, line);
+
+    wordToCompare = codeToCompare.match(/[\a-zA-Z$_(){}["!#%&=?'¡¿*΅~^`<>|°¬-]+/)[0];
+    codeToCompare = codeToCompare.replace(wordToCompare, '');
+
+    await this.postAssignation(wordToCompare, line);
+
+    while (codeToCompare.match(/[\w$_(){}["!#%&\/?='¡¿*΅~^`<>|°¬,;-]+/)) {
+      wordToCompare = codeToCompare.match(/[\w$_(){}["!#%&?'¡¿΅~^`<>|°¬]+/)[0];
+
+      if (Number(wordToCompare)) {
+        console.log('number');
+
+        await this.postNumber(wordToCompare, line);
+      } else{
+        await this.postIdentifier(wordToCompare, line);
+      }
+
+      codeToCompare = codeToCompare.replace(wordToCompare, '');
+
+      if(codeToCompare.length === 1){
+        wordToCompare = codeToCompare.match(/./)[0];
+
+        await this.postSemiColon(wordToCompare, line);
+        break;
+      }
+
+      if(codeToCompare.length > 0) {
+        wordToCompare = codeToCompare.match(/[+-/*]+/)[0];
+        codeToCompare = codeToCompare.replace(wordToCompare, '');
+
+        if (wordToCompare) {
+          await this.postArimeticOperator(wordToCompare, line);
+        } else {
+          await this.postSemiColon(wordToCompare, line);
+        }
+
+        if (wordToCompare === ';') {
+          break;
+        }
+      } else {
+        break;
+      }
 
     }
-    console.log('End while');
+  }
 
+  async postArimeticOperator(wordToCompare: string, line: number) {
+    wordToCompare = wordToCompare.match(this.arimeticOpRegEx)[0];
+
+    if (wordToCompare.length === 1 && wordToCompare) {
+      await this.generateToken('arimeticOperators', wordToCompare, line);
+    } else {
+      await this.generateToken('arimeticOperators', wordToCompare, line);
+    }
+  }
+
+  async postChar(wordToCompare: string, line: number) {
+    wordToCompare = wordToCompare.match(this.charRegEx)[0];
+    wordToCompare = wordToCompare.replace(/'/g, '');
+
+    if (wordToCompare.length === 1 && wordToCompare) {
+      await this.generateToken('identifier', wordToCompare, line, true);
+    } else {
+      await this.generateToken('identifier', wordToCompare, line, false);
+    }
+  }
+
+  async postNumber(wordToCompare: string, line: number) {
+    if (Number(wordToCompare)) {
+      await this.generateToken('identifier', wordToCompare, line, true);
+    } else {
+      await this.generateToken('identifier', wordToCompare, line, false);
+    }
+  }
+
+  async postSemiColon(wordToCompare: string, line: number) {
+    if (wordToCompare.match(/[;]/)) {
+      await this.generateToken('miscellaneous', wordToCompare, line);
+    } else {
+      await this.generateToken('miscellaneous', wordToCompare, line);
+    }
+  }
+
+  async postColon(wordToCompare: string, line: number) {
+    if (wordToCompare.match(/[,]/)) {
+      await this.generateToken('miscellaneous', wordToCompare, line);
+    } else {
+      await this.generateToken('miscellaneous', wordToCompare, line);
+    }
   }
 
   async postIdentifier(wordToCompare: string, line: number) {
+
     if (wordToCompare.match(this.vairablesRegEx)) {
-      await this.generateToken('identifiers', wordToCompare, line, true);
+      await this.generateToken('identifier', wordToCompare, line, true);
     } else {
-      await this.generateToken('identifiers', wordToCompare, line);
+      await this.generateToken('identifier', wordToCompare, line);
     }
   }
 
@@ -176,12 +324,8 @@ export class RegexComponent implements OnInit {
     }
   }
 
-  assignation() {
-
-  }
-
   isDeclaration(code: string) {
-    const option = /^[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬,;-]+ [\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬,;-]+ *= *[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬ ,;]*/;
+    const option = /^[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬,;-]+ [\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬,;-]+/;
     return (code.match(option)) ? true : false;
   }
 
@@ -205,6 +349,7 @@ export class RegexComponent implements OnInit {
     this.code = code.split('\n');
     this.tokens = [];
     this.tokenErrors = [];
+    this.tokensForTxt = [];
 
     for (let i = 0; i < this.code.length; i++) {
       if (this.code[i].length === 0) {
@@ -217,37 +362,47 @@ export class RegexComponent implements OnInit {
 
   async generateToken(code: string, lexeme: string, line: number, accept?: boolean) {
     const option = this.possibleTokens[`${code}`];
-
     const exist = await this.verifyTokenExistence(lexeme);
 
     let newToken = {};
 
     option.counter = option.counter + 1;
 
-    if (!accept) {
+    if (accept === undefined) {
       accept = false;
     }
+    console.log(accept);
 
-    if (option.options.indexOf(lexeme) !== -1 && !exist || accept) {
+    if (option.options.indexOf(lexeme) !== -1  || accept === true) {
+      console.log('1');
+
       newToken = {
         line,
         lexeme,
         token: `${option.id}${option.counter}`
       };
 
+      if (JSON.stringify(newToken) !== '{}'  && !exist) {
+        console.log('2');
 
-    } else if ((option.options.indexOf(lexeme) === -1 && !exist)) {
+        this.tokens.push(newToken);
+      }
+      this.tokensForTxt.push(`${option.id}${option.counter}`);
+    } else if (option.options.indexOf(lexeme) === -1 && !exist) {
+      console.log('3');
 
       newToken = {
         line,
         lexeme,
         token: `ERL${option.id}${option.counter}`
       };
-
       await this.error(option.id, lexeme, line);
-    }
 
-    this.tokens.push(newToken);
+      if (JSON.stringify(newToken) !== '{}'  && !exist) {
+        this.tokens.push(newToken);
+      }
+      this.tokensForTxt.push(`ERL${option.id}${option.counter}`);
+    }
   }
 
   verifyTokenExistence(lexeme: string): boolean {
@@ -285,6 +440,7 @@ export class RegexComponent implements OnInit {
       line,
       messageError
     };
+    console.log(error);
 
     this.tokenErrors.push(error);
 

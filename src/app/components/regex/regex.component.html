@@ -30,4 +30,55 @@ Cal = a * 0.7;
     <div class="usercode">
       <textarea name="code" id="userCode" cols="30" rows="10" (input)="keepCode(usercode.value)" #usercode></textarea>
     </div>
+
+    <div class="tokensTable">
+      <h3>Table of Tokens</h3>
+      <table class="table table-striped">
+        <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Lexeme</th>
+          <th scope="col">Token</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let token of tokens; index as i">
+          <th scope="row">{{ i + 1 }}</th>
+          <td>
+            {{ token.lexeme }}
+          </td>
+          <td>{{ token.token }}</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="errorsTable">
+      <h3>Table of Errors</h3>
+      <table class="table table-striped">
+        <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">Token Error</th>
+          <th scope="col">Lexeme</th>
+          <th scope="col">Line</th>
+          <th scope="col">Description</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr *ngFor="let error of tokenErrors; index as i">
+          <th scope="row">{{ i + 1 }}</th>
+          <td>
+            {{ error.tokenError }}
+          </td>
+          <td>{{ error.lexeme }}</td>
+          <td>{{ error.line }}</td>
+          <td>{{ error.messageError }}</td>
+        </tr>
+        </tbody>
+      </table>
+      <div>
+        <a id="download" download="tokens.txt" (click)="download()">Download Tokens Txt</a>
+      </div>
+    </div>
+
 </div>
