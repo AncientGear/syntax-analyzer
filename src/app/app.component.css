@@ -1,0 +1,6 @@
+
+.clearfix{
+  content: "";
+  clear: both;
+  overflow: auto;
+}

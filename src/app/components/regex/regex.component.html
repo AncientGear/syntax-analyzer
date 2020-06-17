@@ -1,0 +1,33 @@
+
+<div id="background">
+  <div class="information">
+    <ul>
+      <li>
+        <p>Creación de variables tipo int, float y char. Tanto en una línea como líneas separadas.</p>
+      </li>
+      <li>
+        <p>Operaciones aritméticas como +, -, * y /</p>
+      </li>
+      <li>Identificadores aceptando varios carácteres especiales</li>
+    </ul>
+  </div>
+  <div>
+    <p class="example">Example of Code:</p>
+    <div class="ExampleCode">
+      <textarea name="examplecode" id="examplecode" cols="30" rows="10" readonly=true>
+int prueba1 = 6, prueba2 = 9;
+float cal = 9.7;
+char salon = 'a'
+a = a + b * 5;
+Cal = a * 0.7;
+      </textarea>
+    </div>
+  </div>
+    <div class="writedCode">
+      <p>Ingresa tu código o sube un archivo de texto aquí:</p>
+      <input type="file" name="code" accept=".txt" (change)="uploadFile($event)">
+    </div>
+    <div class="usercode">
+      <textarea name="code" id="userCode" cols="30" rows="10" (input)="keepCode(usercode.value)" #usercode></textarea>
+    </div>
+</div>
