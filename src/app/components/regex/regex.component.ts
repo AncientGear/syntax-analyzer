@@ -40,7 +40,7 @@ export class RegexComponent implements OnInit {
     },
     miscellaneous: {
       id: 'SEP',
-      options: [',', ';', ':'],
+      options: [',', ';', ':', '\''],
       counter: 0
     },
     assignationOperator: {
@@ -71,7 +71,7 @@ export class RegexComponent implements OnInit {
     IR: 'Condition Error',
     NF: 'Not Found'
   };
-  charRegEx = /[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬,-]*/;
+  charRegEx = /.*/;
   vairablesRegEx = /^[a-zA-Z][\w$]*/;
   numbersRegEx = /[\d]*[.]*[\d]*/;
   arimeticOpRegEx = /^[+-\/*]/;
@@ -126,6 +126,7 @@ export class RegexComponent implements OnInit {
     }
 
     this.txt = this.tokensForTxt.join(' ');
+    console.log(this.txt);
 
     this.download();
   }
@@ -162,19 +163,22 @@ export class RegexComponent implements OnInit {
     let codeToCompare = code.split(type)[1].replace(/ /g, '');
 
     while (codeToCompare.match(/[\w$_(){}["!#%&\/?='¡¿*΅~^`<>|°¬,;-]+/)) {
-
-      wordToCompare = codeToCompare.match(/[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬,-]+/)[0];
+      debugger;
+      wordToCompare = codeToCompare.match(/[\w]+/)[0];
       codeToCompare = codeToCompare.replace(wordToCompare, '');
-      if(codeToCompare.length === 0 ){
+
+      if (codeToCompare.length === 0) {
+        await this.postSemiColon('', line);
         break;
       }
-
       await this.postIdentifier(wordToCompare, line);
+
 
       wordToCompare = codeToCompare.match(/./)[0];
       codeToCompare = codeToCompare.replace(/./, '');
 
-      if(codeToCompare.length === 0 ){
+      if (codeToCompare.length === 0 ) {
+        await this.postSemiColon('', line);
         break;
       }
 
@@ -184,23 +188,35 @@ export class RegexComponent implements OnInit {
       const possibleColon = wordToCompare.split('')[0];
 
       if(possibleColon === '\'') {
+        codeToCompare = codeToCompare.replace(possibleColon, '');
+        await this.postMiscellaneous(possibleColon, line);
+
+        wordToCompare = codeToCompare.match(/[a-zA-Z0-9$_()\.{}[!#%&\/?¡¿*΅~^<>|°¬-]+/)[0];
+        codeToCompare = codeToCompare.replace(wordToCompare, '');
         await this.postChar(wordToCompare, line);
+        wordToCompare = codeToCompare.match(/^./)[0];
+        codeToCompare = codeToCompare.replace(wordToCompare, '');
+        // await this.postMiscellaneous()
       } else if (Number(wordToCompare)) {
         await this.postNumber(wordToCompare, line);
+        codeToCompare = codeToCompare.replace(wordToCompare, '');
       } else {
         await this.postIdentifier(wordToCompare, line);
+        codeToCompare = codeToCompare.replace(wordToCompare, '');
       }
-      codeToCompare = codeToCompare.replace(wordToCompare, '');
-      wordToCompare = codeToCompare.match(/./)[0];
-
       if(codeToCompare.length === 0 ){
+        await this.postSemiColon('', line);
         break;
       }
+      console.log('1' + codeToCompare);
+      wordToCompare = codeToCompare.match(/./)[0];
 
       if (wordToCompare !== ';') {
         codeToCompare = codeToCompare.replace(/./, '');
         await this.postColon(wordToCompare, line);
       } else {
+        console.log('semicolon');
+
         this.postSemiColon(wordToCompare, line);
         break;
       }
@@ -210,36 +226,51 @@ export class RegexComponent implements OnInit {
   async assignation(code: string, line: number) {
 
     let codeToCompare = code.replace(/[ ]/g, '');
-    let wordToCompare = codeToCompare.match(/[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬-]+/)[0];
+    let wordToCompare = codeToCompare.match(/^[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬-]+/)[0];
+    console.log('Compare 0:' + codeToCompare);
+    console.log('Code 1:' + wordToCompare);
+
     codeToCompare = codeToCompare.replace(wordToCompare, '');
 
     await this.postIdentifier(wordToCompare, line);
+    console.log('Compare2: ' + codeToCompare);
 
-    wordToCompare = codeToCompare.match(/[\a-zA-Z$_(){}["!#%&=?'¡¿*΅~^`<>|°¬-]+/)[0];
+    wordToCompare = codeToCompare.match(/^[\a-zA-Z$_(){}["!#%&?'¡¿*΅~^`<>|°¬-]*=/)[0];
     codeToCompare = codeToCompare.replace(wordToCompare, '');
 
-    await this.postAssignation(wordToCompare, line);
 
+    await this.postAssignation(wordToCompare, line);
+    console.log('Compare 1:' + codeToCompare);
+    console.log('Code 0:' + wordToCompare);
     while (codeToCompare.match(/[\w$_(){}["!#%&\/?='¡¿*΅~^`<>|°¬,;-]+/)) {
-      wordToCompare = codeToCompare.match(/[\w$_(){}["!#%&?'¡¿΅~^`<>|°¬]+/)[0];
+      console.log('Code 3:' + codeToCompare);
+
+      wordToCompare = codeToCompare.match(/[\w$_(){}["\.!#%&?'¡¿΅~^`<>|°¬]+/)[0];
 
       if (Number(wordToCompare)) {
 
         await this.postNumber(wordToCompare, line);
       } else{
+        console.log('word:' + wordToCompare);
+
         await this.postIdentifier(wordToCompare, line);
       }
 
       codeToCompare = codeToCompare.replace(wordToCompare, '');
-
-      if(codeToCompare.length === 1){
+      if (codeToCompare.length === 0 ) {
+        await this.postSemiColon('', line);
+        break;
+      }
+      if (codeToCompare.length === 1) {
         wordToCompare = codeToCompare.match(/./)[0];
 
         await this.postSemiColon(wordToCompare, line);
         break;
       }
 
+      console.log('Code 2:' + codeToCompare);
       if(codeToCompare.length > 0) {
+
         wordToCompare = codeToCompare.match(/[+-/*]+/)[0];
         codeToCompare = codeToCompare.replace(wordToCompare, '');
 
@@ -256,6 +287,14 @@ export class RegexComponent implements OnInit {
         break;
       }
 
+    }
+  }
+
+  async postMiscellaneous(wordToCompare: string, line: number) {
+    if (wordToCompare.match(/'/)) {
+      await this.generateToken('miscellaneous', wordToCompare, line);
+    } else {
+      await this.generateToken('miscellaneous', wordToCompare, line);
     }
   }
 
