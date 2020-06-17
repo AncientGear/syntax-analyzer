@@ -124,7 +124,6 @@ export class RegexComponent implements OnInit {
         i--;
       }
     }
-    console.log(this.tokens);
 
     this.txt = this.tokensForTxt.join(' ');
 
@@ -213,7 +212,6 @@ export class RegexComponent implements OnInit {
     let codeToCompare = code.replace(/[ ]/g, '');
     let wordToCompare = codeToCompare.match(/[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬-]+/)[0];
     codeToCompare = codeToCompare.replace(wordToCompare, '');
-    console.log('1' + wordToCompare);
 
     await this.postIdentifier(wordToCompare, line);
 
@@ -226,7 +224,6 @@ export class RegexComponent implements OnInit {
       wordToCompare = codeToCompare.match(/[\w$_(){}["!#%&?'¡¿΅~^`<>|°¬]+/)[0];
 
       if (Number(wordToCompare)) {
-        console.log('number');
 
         await this.postNumber(wordToCompare, line);
       } else{
@@ -371,10 +368,8 @@ export class RegexComponent implements OnInit {
     if (accept === undefined) {
       accept = false;
     }
-    console.log(accept);
 
     if (option.options.indexOf(lexeme) !== -1  || accept === true) {
-      console.log('1');
 
       newToken = {
         line,
@@ -383,13 +378,11 @@ export class RegexComponent implements OnInit {
       };
 
       if (JSON.stringify(newToken) !== '{}'  && !exist) {
-        console.log('2');
 
         this.tokens.push(newToken);
       }
       this.tokensForTxt.push(`${option.id}${option.counter}`);
     } else if (option.options.indexOf(lexeme) === -1 && !exist) {
-      console.log('3');
 
       newToken = {
         line,
@@ -440,7 +433,6 @@ export class RegexComponent implements OnInit {
       line,
       messageError
     };
-    console.log(error);
 
     this.tokenErrors.push(error);
 
