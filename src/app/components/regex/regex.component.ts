@@ -71,7 +71,7 @@ export class RegexComponent implements OnInit {
     IR: 'Condition Error',
     NF: 'Not Found'
   };
-  charRegEx = /.*/;
+  charRegEx = /./;
   vairablesRegEx = /^[a-zA-Z][\w$]*/;
   numbersRegEx = /[\d]*[.]*[\d]*/;
   arimeticOpRegEx = /^[+-\/*]/;
@@ -126,7 +126,6 @@ export class RegexComponent implements OnInit {
     }
 
     this.txt = this.tokensForTxt.join(' ');
-    console.log(this.txt);
 
     this.download();
   }
@@ -163,7 +162,6 @@ export class RegexComponent implements OnInit {
     let codeToCompare = code.split(type)[1].replace(/ /g, '');
 
     while (codeToCompare.match(/[\w$_(){}["!#%&\/?='¡¿*΅~^`<>|°¬,;-]+/)) {
-      debugger;
       wordToCompare = codeToCompare.match(/[\w]+/)[0];
       codeToCompare = codeToCompare.replace(wordToCompare, '');
 
@@ -208,15 +206,13 @@ export class RegexComponent implements OnInit {
         await this.postSemiColon('', line);
         break;
       }
-      console.log('1' + codeToCompare);
+
       wordToCompare = codeToCompare.match(/./)[0];
 
       if (wordToCompare !== ';') {
         codeToCompare = codeToCompare.replace(/./, '');
         await this.postColon(wordToCompare, line);
       } else {
-        console.log('semicolon');
-
         this.postSemiColon(wordToCompare, line);
         break;
       }
@@ -227,32 +223,25 @@ export class RegexComponent implements OnInit {
 
     let codeToCompare = code.replace(/[ ]/g, '');
     let wordToCompare = codeToCompare.match(/^[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬-]+/)[0];
-    console.log('Compare 0:' + codeToCompare);
-    console.log('Code 1:' + wordToCompare);
 
     codeToCompare = codeToCompare.replace(wordToCompare, '');
 
     await this.postIdentifier(wordToCompare, line);
-    console.log('Compare2: ' + codeToCompare);
 
     wordToCompare = codeToCompare.match(/^[\a-zA-Z$_(){}["!#%&?'¡¿*΅~^`<>|°¬-]*=/)[0];
     codeToCompare = codeToCompare.replace(wordToCompare, '');
 
 
     await this.postAssignation(wordToCompare, line);
-    console.log('Compare 1:' + codeToCompare);
-    console.log('Code 0:' + wordToCompare);
-    while (codeToCompare.match(/[\w$_(){}["!#%&\/?='¡¿*΅~^`<>|°¬,;-]+/)) {
-      console.log('Code 3:' + codeToCompare);
 
-      wordToCompare = codeToCompare.match(/[\w$_(){}["\.!#%&?'¡¿΅~^`<>|°¬]+/)[0];
+    while (codeToCompare.match(/^[\w$_(){}["!#%&\/?='¡¿*΅~^`<>|°¬,;-]+/)) {
+
+      wordToCompare = codeToCompare.match(/^[\w$_(){}["\.!#%&?'¡¿΅~^`<>|°¬]+/)[0];
 
       if (Number(wordToCompare)) {
 
         await this.postNumber(wordToCompare, line);
       } else{
-        console.log('word:' + wordToCompare);
-
         await this.postIdentifier(wordToCompare, line);
       }
 
@@ -268,7 +257,6 @@ export class RegexComponent implements OnInit {
         break;
       }
 
-      console.log('Code 2:' + codeToCompare);
       if(codeToCompare.length > 0) {
 
         wordToCompare = codeToCompare.match(/[+-/*]+/)[0];
@@ -366,7 +354,7 @@ export class RegexComponent implements OnInit {
   }
 
   isAssignation(code: string) {
-    const option = /^[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬]+[ ]*=[ ]*[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬,;-]*/;
+    const option =  /^[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬]+[ ]*=[ ]*[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬,;-]*/;
     return (code.match(option)) ? true : false;
   }
 
@@ -398,55 +386,56 @@ export class RegexComponent implements OnInit {
 
   async generateToken(code: string, lexeme: string, line: number, accept?: boolean) {
     const option = this.possibleTokens[`${code}`];
-    const exist = await this.verifyTokenExistence(lexeme);
+    console.log('option: ', option);
 
-    let newToken = {};
-
-    option.counter = option.counter + 1;
-
+    let newToken;
     if (accept === undefined) {
-      accept = false;
+        accept = false;
     }
 
-    if (option.options.indexOf(lexeme) !== -1  || accept === true) {
+    const exist = await this.verifyTokenExistence(lexeme);
 
-      newToken = {
-        line,
-        lexeme,
-        token: `${option.id}${option.counter}`
-      };
+    if (exist !== false) {
+        this.tokensForTxt.push(this.tokens[exist].token);
+    } else {
+        option.counter++;
+        if (option.options.indexOf(lexeme) !== -1 || accept === true) {
+          console.log('2');
 
-      if (JSON.stringify(newToken) !== '{}'  && !exist) {
+          newToken = {
+              line,
+              lexeme,
+              token: `${option.id}${option.counter}`
+          };
+          console.log('New Token: ', newToken);
 
-        this.tokens.push(newToken);
-      }
-      this.tokensForTxt.push(`${option.id}${option.counter}`);
-    } else if (option.options.indexOf(lexeme) === -1 && !exist) {
+          this.tokensForTxt.push(`${option.id}${option.counter}`);
 
-      newToken = {
-        line,
-        lexeme,
-        token: `ERL${option.id}${option.counter}`
-      };
-      await this.error(option.id, lexeme, line);
-
-      if (JSON.stringify(newToken) !== '{}'  && !exist) {
-        this.tokens.push(newToken);
-      }
-      this.tokensForTxt.push(`ERL${option.id}${option.counter}`);
+        } else {
+            newToken = {
+                line,
+                lexeme,
+                token: `ERR${option.id}${option.contador}`,
+            }
+            newToken.message = this.errors[`${option.id}`]
+            this.tokenErrors.push(newToken);
+            this.tokensForTxt.push(`ERR${option.id}${option.contador}`);
+        }
+        if (JSON.stringify(newToken) !== '{}'){
+            this.tokens.push(newToken);
+        }
     }
   }
 
-  verifyTokenExistence(lexeme: string): boolean {
-    let found = false;
+  verifyTokenExistence(lexeme: string) {
+
     for (let i = 0; i < this.tokens.length; i++) {
       const token = this.tokens[i];
       if (token.lexeme === lexeme) {
-        found = true;
-        break;
+        return i;
       }
     }
-    return found;
+    return false;
   }
 
   verifyErrorExistence(token: string): boolean {
