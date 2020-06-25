@@ -256,7 +256,7 @@ export class RegexComponent implements OnInit {
         await this.postSemiColon(wordToCompare, line);
         break;
       }
-
+      codeToCompare = codeToCompare.replace(/^[ ]/, '');
       if(codeToCompare.length > 0) {
 
         wordToCompare = codeToCompare.match(/[+-/*]+/)[0];
@@ -287,10 +287,12 @@ export class RegexComponent implements OnInit {
   }
 
   async postArimeticOperator(wordToCompare: string, line: number) {
-    wordToCompare = wordToCompare.match(this.arimeticOpRegEx)[0];
+    const codeToCompare = wordToCompare.match(this.arimeticOpRegEx)[0];
+    console.log(wordToCompare);
 
-    if (wordToCompare.length === 1 && wordToCompare) {
-      await this.generateToken('arimeticOperators', wordToCompare, line);
+
+    if (wordToCompare.length === 1 && codeToCompare) {
+      await this.generateToken('arimeticOperators', codeToCompare, line);
     } else {
       await this.generateToken('arimeticOperators', wordToCompare, line);
     }
@@ -386,7 +388,7 @@ export class RegexComponent implements OnInit {
 
   async generateToken(code: string, lexeme: string, line: number, accept?: boolean) {
     const option = this.possibleTokens[`${code}`];
-    console.log('option: ', option);
+    console.log(option);
 
     let newToken;
     if (accept === undefined) {
@@ -400,14 +402,12 @@ export class RegexComponent implements OnInit {
     } else {
         option.counter++;
         if (option.options.indexOf(lexeme) !== -1 || accept === true) {
-          console.log('2');
 
           newToken = {
               line,
               lexeme,
               token: `${option.id}${option.counter}`
           };
-          console.log('New Token: ', newToken);
 
           this.tokensForTxt.push(`${option.id}${option.counter}`);
 
@@ -415,13 +415,13 @@ export class RegexComponent implements OnInit {
             newToken = {
                 line,
                 lexeme,
-                token: `ERR${option.id}${option.contador}`,
-            }
-            newToken.message = this.errors[`${option.id}`]
+                token: `ERR${option.id}${option.counter}`,
+            };
+            newToken.message = this.errors[`${option.id}`];
             this.tokenErrors.push(newToken);
-            this.tokensForTxt.push(`ERR${option.id}${option.contador}`);
+            this.tokensForTxt.push(`ERR${option.id}${option.counter}`);
         }
-        if (JSON.stringify(newToken) !== '{}'){
+        if (JSON.stringify(newToken) !== '{}') {
             this.tokens.push(newToken);
         }
     }
