@@ -8,13 +8,25 @@ import { RegexComponent } from './components/regex/regex.component';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { HeaderComponent } from './components/header/header.component';
 import { FooterComponent } from './components/footer/footer.component';
+import { ExampleCodeComponent } from './components/example-code/example-code.component';
+import { InputCodeComponent } from './components/input-code/input-code.component';
+import { TokensTableComponent } from './components/tokens-table/tokens-table.component';
+import { TextEnterCodeComponent } from './components/text-enter-code/text-enter-code.component';
+import { ErrorsTableComponent } from './components/errors-table/errors-table.component';
+import { DownloadTxtComponent } from './components/download-txt/download-txt.component';
 
 @NgModule({
   declarations: [
     AppComponent,
     RegexComponent,
     HeaderComponent,
-    FooterComponent
+    FooterComponent,
+    ExampleCodeComponent,
+    InputCodeComponent,
+    TokensTableComponent,
+    TextEnterCodeComponent,
+    ErrorsTableComponent,
+    DownloadTxtComponent
   ],
   imports: [
     BrowserModule,

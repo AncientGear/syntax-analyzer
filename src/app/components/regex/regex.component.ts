@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit } from '@angular/core'
 
 @Component({
   selector: 'app-regex',
@@ -21,7 +21,6 @@ export class RegexComponent implements OnInit {
       id: 'OA',
       options: ['+', '-', '/', '*'],
       counter: 0
-
     },
     relationalsOperators: {
       id: 'OR',
@@ -130,7 +129,6 @@ export class RegexComponent implements OnInit {
     this.download();
   }
 
-
   download() {
     const element = document.getElementById('download');
 
@@ -224,9 +222,9 @@ export class RegexComponent implements OnInit {
     let codeToCompare = code.replace(/[ ]/g, '');
     let wordToCompare = codeToCompare.match(/^[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬-]+/)[0];
 
-    codeToCompare = codeToCompare.replace(wordToCompare, '');
-
     await this.postIdentifier(wordToCompare, line);
+
+    codeToCompare = codeToCompare.replace(wordToCompare, '');
 
     wordToCompare = codeToCompare.match(/^[\a-zA-Z$_(){}["!#%&?'¡¿*΅~^`<>|°¬-]*=/)[0];
     codeToCompare = codeToCompare.replace(wordToCompare, '');
