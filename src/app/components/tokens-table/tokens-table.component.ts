@@ -7,6 +7,8 @@ import { Component, OnInit } from '@angular/core';
 })
 export class TokensTableComponent implements OnInit {
 
+  tokens = [];
+
   constructor() { }
 
   ngOnInit(): void {

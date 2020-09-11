@@ -1,1 +1,7 @@
-<p>input-code works!</p>
+<div class="writedCode">
+  <p>Ingresa tu código o sube un archivo de texto aquí:</p>
+  <input type="file" name="code" accept=".txt" (change)="uploadFile($event)">
+</div>
+<div class="usercode">
+  <textarea name="code" id="userCode" cols="30" rows="10" (input)="keepCode(usercode.value)" #usercode></textarea>
+</div>

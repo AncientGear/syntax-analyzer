@@ -1,1 +1,21 @@
-<p>tokens-table works!</p>
+<div class="tokensTable">
+  <h3>Table of Tokens</h3>
+  <table class="table table-striped">
+    <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Lexeme</th>
+      <th scope="col">Token</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let token of tokens; index as i">
+      <th scope="row">{{ i + 1 }}</th>
+      <td>
+        {{ token.lexeme }}
+      </td>
+      <td>{{ token.token }}</td>
+    </tr>
+    </tbody>
+  </table>
+</div>

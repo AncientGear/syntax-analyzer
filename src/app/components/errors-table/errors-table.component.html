@@ -1,1 +1,25 @@
-<p>errors-table works!</p>
+<div class="errorsTable">
+  <h3>Table of Errors</h3>
+  <table class="table table-striped">
+    <thead>
+    <tr>
+      <th scope="col">#</th>
+      <th scope="col">Token Error</th>
+      <th scope="col">Lexeme</th>
+      <th scope="col">Line</th>
+      <th scope="col">Description</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let error of tokenErrors; index as i">
+      <th scope="row">{{ i + 1 }}</th>
+      <td>
+        {{ error.tokenError }}
+      </td>
+      <td>{{ error.lexeme }}</td>
+      <td>{{ error.line }}</td>
+      <td>{{ error.messageError }}</td>
+    </tr>
+    </tbody>
+  </table>
+</div>

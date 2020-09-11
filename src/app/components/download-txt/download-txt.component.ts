@@ -7,9 +7,18 @@ import { Component, OnInit } from '@angular/core';
 })
 export class DownloadTxtComponent implements OnInit {
 
+  txt: string;
+
   constructor() { }
 
   ngOnInit(): void {
   }
 
+  download() {
+
+    const element = document.getElementById('download');
+
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(this.txt));
+
+  }
 }
