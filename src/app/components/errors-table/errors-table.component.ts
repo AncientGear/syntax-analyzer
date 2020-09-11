@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, Input, OnInit } from '@angular/core';
 
 @Component({
   selector: 'app-errors-table',
@@ -7,7 +7,7 @@ import { Component, OnInit } from '@angular/core';
 })
 export class ErrorsTableComponent implements OnInit {
 
-  tokenErrors = [];
+  @Input() tokenErrors = [];
 
   constructor() { }
 

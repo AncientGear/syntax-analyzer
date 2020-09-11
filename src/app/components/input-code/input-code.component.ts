@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 
 @Component({
   selector: 'app-input-code',
@@ -11,7 +11,11 @@ export class InputCodeComponent implements OnInit {
   tokens = [];
   tokenErrors = [];
 
-  constructor() { }
+  @Output() sendCode:EventEmitter<any>;
+
+  constructor() {
+    this.sendCode = new EventEmitter();
+  }
 
   ngOnInit(): void {
   }
@@ -36,9 +40,6 @@ export class InputCodeComponent implements OnInit {
 
   keepCode(code: string) {
     this.code = code.split('\n');
-    this.tokens = [];
-    this.tokenErrors = [];
-    this.tokensForTxt = [];
 
     for (let i = 0; i < this.code.length; i++) {
       if (this.code[i].length === 0) {
@@ -46,7 +47,7 @@ export class InputCodeComponent implements OnInit {
       }
     }
 
-    // this.analyzeCode();
+    this.sendCode.emit(this.code);
   }
 
   showTxtContent(contend: any) {

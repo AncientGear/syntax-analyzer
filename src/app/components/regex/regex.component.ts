@@ -76,9 +76,15 @@ export class RegexComponent implements OnInit {
   arimeticOpRegEx = /^[+-\/*]/;
   constructor() { }
 
-  ngOnInit(): void {
-    console.log(this.txt);
+  ngOnInit(): void { }
 
+  async keepCode(code: any) {
+    this.code = code;
+    this.tokens = [];
+    this.tokenErrors = [];
+    this.tokensForTxt = [];
+
+    await this.analyzeCode();
   }
 
   async analyzeCode() {
@@ -264,8 +270,6 @@ export class RegexComponent implements OnInit {
 
   async postArimeticOperator(wordToCompare: string, line: number) {
     const codeToCompare = wordToCompare.match(this.arimeticOpRegEx)[0];
-    console.log(wordToCompare);
-
 
     if (wordToCompare.length === 1 && codeToCompare) {
       await this.generateToken('arimeticOperators', codeToCompare, line);
@@ -344,7 +348,6 @@ export class RegexComponent implements OnInit {
 
   async generateToken(code: string, lexeme: string, line: number, accept?: boolean) {
     const option = this.possibleTokens[`${code}`];
-    console.log(option);
 
     let newToken;
     if (accept === undefined) {
