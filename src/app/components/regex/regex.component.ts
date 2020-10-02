@@ -95,11 +95,8 @@ export class RegexComponent implements OnInit {
 
       const code = this.code.shift();
 
-      if (this.isDeclaration(code)) {
-        await this.declaration(code, line);
-      } else if (this.isAssignation(code)) {
-        await this.assignation(code, line);
-      }
+      await this.verifyLineCodeType(code, line);
+
       if (this.code === undefined) {
         break;
       }
@@ -117,7 +114,15 @@ export class RegexComponent implements OnInit {
 
     this.txt = this.tokensForTxt.join(' ');
 
-    // this.download();
+
+  }
+
+  async verifyLineCodeType(code: string, line: number) {
+    if (this.isDeclaration(code)) {
+      await this.declaration(code, line);
+    } else if (this.isAssignation(code)) {
+      await this.assignation(code, line);
+    }
   }
 
   inizializeCounters() {
@@ -298,10 +303,11 @@ export class RegexComponent implements OnInit {
   }
 
   async postSemiColon(wordToCompare: string, line: number) {
+
     if (wordToCompare.match(/[;]/)) {
       await this.generateToken('miscellaneous', wordToCompare, line);
     } else {
-      await this.generateToken('miscellaneous', wordToCompare, line);
+      await this.generateToken('miscellaneous', 'null', line);
     }
   }
 
@@ -337,6 +343,12 @@ export class RegexComponent implements OnInit {
 
   isAssignation(code: string) {
     const option =  /^[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬]+[ ]*=[ ]*[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬,;-]*/;
+    return (code.match(option)) ? true : false;
+  }
+
+  isWhile(code: string) {
+    const option = /^[\w$_{}["!#%&\/?'¡¿*΅~^`<>|°¬]+[ ]*([\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬;]){/;
+
     return (code.match(option)) ? true : false;
   }
 
@@ -376,14 +388,16 @@ export class RegexComponent implements OnInit {
                 lexeme,
                 token: `ERR${option.id}${option.counter}`,
             };
+
             newToken.message = this.errors[`${option.id}`];
             this.tokenErrors.push(newToken);
             this.tokensForTxt.push(`ERR${option.id}${option.counter}`);
+            console.log(newToken);
         }
         if (JSON.stringify(newToken) !== '{}') {
             this.tokens.push(newToken);
         }
-    }
+      }
   }
 
   verifyTokenExistence(lexeme: string) {
