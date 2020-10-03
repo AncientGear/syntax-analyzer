@@ -46,6 +46,7 @@ export class SemanticErrorsService {
 					break;
 			}	
 		}
+		return this.errsem;
 	}
 	
 	compare(ante, ahora,siguiente){
