@@ -11,10 +11,16 @@ export class RegexComponent implements OnInit {
   txt: string;
   tokens = [];
   tokenErrors = [];
+  context = 0;
   possibleTokens = {
     dateTypes: {
       id: 'TD',
       options: ['int', 'char', 'float'],
+      counter: 0
+    },
+    iterator: {
+      id: 'IT',
+      options: ['while'],
       counter: 0
     },
     arimeticOperators: {
@@ -24,7 +30,7 @@ export class RegexComponent implements OnInit {
     },
     relationalsOperators: {
       id: 'OR',
-      options: ['<', '<=', '>', '>=', '!=', '=='],
+      options: ['<', '<==', '>', '>==', '!==', '===', '&&', '||'],
       counter: 0
     },
     conditionalOperators: {
@@ -79,6 +85,7 @@ export class RegexComponent implements OnInit {
   ngOnInit(): void { }
 
   async keepCode(code: any) {
+
     this.code = code;
     this.tokens = [];
     this.tokenErrors = [];
@@ -95,7 +102,7 @@ export class RegexComponent implements OnInit {
 
       const code = this.code.shift();
 
-      await this.verifyLineCodeType(code, line);
+      line = await this.verifyLineCodeType(code, line) || line;
 
       if (this.code === undefined) {
         break;
@@ -113,16 +120,20 @@ export class RegexComponent implements OnInit {
     }
 
     this.txt = this.tokensForTxt.join(' ');
-
-
   }
 
-  async verifyLineCodeType(code: string, line: number) {
+  async verifyLineCodeType(code: string, line: number, context?: number) {
+    context = context || 1;
+
     if (this.isDeclaration(code)) {
-      await this.declaration(code, line);
+      await this.declaration(code, line, context);
     } else if (this.isAssignation(code)) {
-      await this.assignation(code, line);
+      await this.assignation(code, line, context);
+    } else if (this.isWhile(code)) {
+      line = await this.While(code, line, context);
     }
+
+    return line;
   }
 
   inizializeCounters() {
@@ -137,15 +148,18 @@ export class RegexComponent implements OnInit {
     tokens.relationalsOperators.counter = 0;
     tokens.notFound.counter = 0;
     tokens.identifier.counter = 0;
+    tokens.iterator.counter = 0;
+
+    this.context = 0;
   }
 
-  async declaration(code: string, line: number) {
+  async declaration(code: string, line: number, context: number) {
     let wordToCompare = '';
 
     let type = await this.verifyType(code);
     type = this.possibleTokens.dateTypes.options[type] || code.split(' ')[0];
 
-    await this.generateToken('dateTypes', type, line);
+    await this.generateToken('dateTypes', type, line, context);
     let codeToCompare = code.split(type)[1].replace(/ /g, '');
 
     while (codeToCompare.match(/[\w$_(){}["!#%&\/?='¡¿*΅~^`<>|°¬,;-]+/)) {
@@ -153,44 +167,43 @@ export class RegexComponent implements OnInit {
       codeToCompare = codeToCompare.replace(wordToCompare, '');
 
       if (codeToCompare.length === 0) {
-        await this.postSemiColon('', line);
+        await this.postSemiColon('', line, context);
         break;
       }
-      await this.postIdentifier(wordToCompare, line);
-
+      await this.postIdentifier(wordToCompare, line, context);
 
       wordToCompare = codeToCompare.match(/./)[0];
       codeToCompare = codeToCompare.replace(/./, '');
 
       if (codeToCompare.length === 0 ) {
-        await this.postSemiColon('', line);
+        await this.postSemiColon('', line, context);
         break;
       }
 
-      await this.postAssignation(wordToCompare, line);
+      await this.postAssignation(wordToCompare, line, context);
 
       wordToCompare = codeToCompare.match(/[a-zA-Z0-9$_()\.{}["!#%&\/?'¡¿*΅~^`<>|°¬-]+/)[0];
       const possibleColon = wordToCompare.split('')[0];
 
       if(possibleColon === '\'') {
         codeToCompare = codeToCompare.replace(possibleColon, '');
-        await this.postMiscellaneous(possibleColon, line);
+        await this.postMiscellaneous(possibleColon, line, context);
 
         wordToCompare = codeToCompare.match(/[a-zA-Z0-9$_()\.{}[!#%&\/?¡¿*΅~^<>|°¬-]+/)[0];
         codeToCompare = codeToCompare.replace(wordToCompare, '');
-        await this.postChar(wordToCompare, line);
+        await this.postChar(wordToCompare, line, context);
         wordToCompare = codeToCompare.match(/^./)[0];
         codeToCompare = codeToCompare.replace(wordToCompare, '');
         // await this.postMiscellaneous()
       } else if (Number(wordToCompare)) {
-        await this.postNumber(wordToCompare, line);
+        await this.postNumber(wordToCompare, line, context);
         codeToCompare = codeToCompare.replace(wordToCompare, '');
       } else {
-        await this.postIdentifier(wordToCompare, line);
+        await this.postIdentifier(wordToCompare, line, context);
         codeToCompare = codeToCompare.replace(wordToCompare, '');
       }
       if(codeToCompare.length === 0 ){
-        await this.postSemiColon('', line);
+        await this.postSemiColon('', line, context);
         break;
       }
 
@@ -198,20 +211,20 @@ export class RegexComponent implements OnInit {
 
       if (wordToCompare !== ';') {
         codeToCompare = codeToCompare.replace(/./, '');
-        await this.postColon(wordToCompare, line);
+        await this.postColon(wordToCompare, line, context);
       } else {
-        this.postSemiColon(wordToCompare, line);
+        this.postSemiColon(wordToCompare, line, context);
         break;
       }
     }
   }
 
-  async assignation(code: string, line: number) {
+  async assignation(code: string, line: number, context: number) {
 
     let codeToCompare = code.replace(/[ ]/g, '');
     let wordToCompare = codeToCompare.match(/^[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬-]+/)[0];
 
-    await this.postIdentifier(wordToCompare, line);
+    await this.postIdentifier(wordToCompare, line, context);
 
     codeToCompare = codeToCompare.replace(wordToCompare, '');
 
@@ -219,7 +232,7 @@ export class RegexComponent implements OnInit {
     codeToCompare = codeToCompare.replace(wordToCompare, '');
 
 
-    await this.postAssignation(wordToCompare, line);
+    await this.postAssignation(wordToCompare, line, context);
 
     while (codeToCompare.match(/^[\w$_(){}["!#%&\/?='¡¿*΅~^`<>|°¬,;-]+/)) {
 
@@ -227,20 +240,20 @@ export class RegexComponent implements OnInit {
 
       if (Number(wordToCompare)) {
 
-        await this.postNumber(wordToCompare, line);
+        await this.postNumber(wordToCompare, line, context);
       } else{
-        await this.postIdentifier(wordToCompare, line);
+        await this.postIdentifier(wordToCompare, line, context);
       }
 
       codeToCompare = codeToCompare.replace(wordToCompare, '');
       if (codeToCompare.length === 0 ) {
-        await this.postSemiColon('', line);
+        await this.postSemiColon('', line, context);
         break;
       }
       if (codeToCompare.length === 1) {
         wordToCompare = codeToCompare.match(/./)[0];
 
-        await this.postSemiColon(wordToCompare, line);
+        await this.postSemiColon(wordToCompare, line, context);
         break;
       }
       codeToCompare = codeToCompare.replace(/^[ ]/, '');
@@ -250,9 +263,9 @@ export class RegexComponent implements OnInit {
         codeToCompare = codeToCompare.replace(wordToCompare, '');
 
         if (wordToCompare) {
-          await this.postArimeticOperator(wordToCompare, line);
+          await this.postArimeticOperator(wordToCompare, line, context);
         } else {
-          await this.postSemiColon(wordToCompare, line);
+          await this.postSemiColon(wordToCompare, line, context);
         }
 
         if (wordToCompare === ';') {
@@ -265,74 +278,127 @@ export class RegexComponent implements OnInit {
     }
   }
 
-  async postMiscellaneous(wordToCompare: string, line: number) {
-    if (wordToCompare.match(/'/)) {
-      await this.generateToken('miscellaneous', wordToCompare, line);
-    } else {
-      await this.generateToken('miscellaneous', wordToCompare, line);
+  async While(code: string, line: number, context: number) {
+    context++;
+
+    let codeToCompare = code;
+    let wordToCompare = codeToCompare.match(/^[a-zA-ZáéíóúÁÉÍÓÚ\w]*/)[0];
+    codeToCompare = codeToCompare.replace(wordToCompare, '');
+    await this.postWhile(wordToCompare, line, context);
+
+    wordToCompare = codeToCompare.match(/^./)[0];
+    codeToCompare = codeToCompare.replace(wordToCompare, '');
+    await this.postDelimiter(wordToCompare, line, context);
+
+
+    const verifyConditions = codeToCompare.match(/^[\w$_(){}["!#%&\/?='¡¿*΅~^`<>|°¬,;]*/)[0];
+
+    if (verifyConditions.length !== 0) {
+      const conditions  = verifyConditions.split(';');
+      conditions.forEach(condition => {
+
+      });
+    }
+
+    // tslint:disable-next-line: prefer-for-of
+    for (let i = 0; i < this.code.length; i++) {
+      const str = this.code.shift();
+      if (!str.match(/}.*/)) {
+        line++;
+        i--;
+        codeToCompare = str;
+
+      } else {
+        break;
+      }
+    }
+
+    return line;
+  }
+
+
+  async postDelimiter(wordToCompare: string, line: number, context: number) {
+    if (wordToCompare.match(/(|)|{|}|[|]/)) {
+      await this.generateToken('delimiters', wordToCompare, line, context);
     }
   }
 
-  async postArimeticOperator(wordToCompare: string, line: number) {
+  async postMiscellaneous(wordToCompare: string, line: number, context: number) {
+    if (wordToCompare.match(/'/)) {
+      await this.generateToken('miscellaneous', wordToCompare, line, context);
+    } else {
+      await this.generateToken('miscellaneous', wordToCompare, line, context);
+    }
+  }
+
+  async postArimeticOperator(wordToCompare: string, line: number, context: number) {
     const codeToCompare = wordToCompare.match(this.arimeticOpRegEx)[0];
 
     if (wordToCompare.length === 1 && codeToCompare) {
-      await this.generateToken('arimeticOperators', codeToCompare, line);
+      await this.generateToken('arimeticOperators', codeToCompare, line, context);
     } else {
-      await this.generateToken('arimeticOperators', wordToCompare, line);
+      await this.generateToken('arimeticOperators', wordToCompare, line, context);
     }
   }
 
-  async postChar(wordToCompare: string, line: number) {
+  async postChar(wordToCompare: string, line: number, context: number) {
     wordToCompare = wordToCompare.match(this.charRegEx)[0];
     wordToCompare = wordToCompare.replace(/'/g, '');
 
     if (wordToCompare.length === 1 && wordToCompare) {
-      await this.generateToken('identifier', wordToCompare, line, true);
+      await this.generateToken('identifier', wordToCompare, line, context, true);
     } else {
-      await this.generateToken('identifier', wordToCompare, line, false);
+      await this.generateToken('identifier', wordToCompare, line, context, false);
     }
   }
 
-  async postNumber(wordToCompare: string, line: number) {
+  async postNumber(wordToCompare: string, line: number, context: number) {
     if (Number(wordToCompare)) {
-      await this.generateToken('identifier', wordToCompare, line, true);
+      await this.generateToken('identifier', wordToCompare, line, context, true);
     } else {
-      await this.generateToken('identifier', wordToCompare, line, false);
+      await this.generateToken('identifier', wordToCompare, line, context, false);
     }
   }
 
-  async postSemiColon(wordToCompare: string, line: number) {
+  async postWhile(wordToCompare: string, line: number, context: number) {
+    if (wordToCompare === 'while') {
+      await this.generateToken('iterator', wordToCompare, line, context, true);
+    } else {
+      await this.generateToken('iterator', wordToCompare, line, context, false);
+    }
+  }
+
+  async postSemiColon(wordToCompare: string, line: number, context: number) {
 
     if (wordToCompare.match(/[;]/)) {
-      await this.generateToken('miscellaneous', wordToCompare, line);
+      await this.generateToken('miscellaneous', wordToCompare, context, line);
     } else {
-      await this.generateToken('miscellaneous', 'null', line);
+      await this.generateToken('miscellaneous', 'null', line, context);
     }
   }
 
-  async postColon(wordToCompare: string, line: number) {
+  async postColon(wordToCompare: string, line: number, context: number) {
     if (wordToCompare.match(/[,]/)) {
-      await this.generateToken('miscellaneous', wordToCompare, line);
+      await this.generateToken('miscellaneous', wordToCompare, line, context);
     } else {
-      await this.generateToken('miscellaneous', wordToCompare, line);
+      await this.generateToken('miscellaneous', wordToCompare, line, context);
     }
   }
 
-  async postIdentifier(wordToCompare: string, line: number) {
+  async postIdentifier(wordToCompare: string, line: number, context: number) {
 
     if (wordToCompare.match(this.vairablesRegEx)) {
-      await this.generateToken('identifier', wordToCompare, line, true);
+      await this.generateToken('identifier', wordToCompare, line, context, true);
     } else {
-      await this.generateToken('identifier', wordToCompare, line);
+      await this.generateToken('identifier', wordToCompare, line, context);
     }
   }
 
-  async postAssignation(codeToCompare: string, line: number) {
+  async postAssignation(codeToCompare: string, line: number, context: number) {
     if (codeToCompare.match(/^=/)) {
-      await this.generateToken('assignationOperator', codeToCompare, line);
+      await this.generateToken('assignationOperator', codeToCompare, line, context);
     } else {
-      await this.generateToken('assignationOperator', codeToCompare, line);
+      await this.generateToken('assignationOperator', codeToCompare, line, context);
     }
   }
 
@@ -346,8 +412,10 @@ export class RegexComponent implements OnInit {
     return (code.match(option)) ? true : false;
   }
 
+
   isWhile(code: string) {
-    const option = /^[\w$_{}["!#%&\/?'¡¿*΅~^`<>|°¬]+[ ]*([\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬;]){/;
+
+    const option = /\w+\([\w><=& |;]*\){/;
 
     return (code.match(option)) ? true : false;
   }
@@ -358,7 +426,7 @@ export class RegexComponent implements OnInit {
     return this.possibleTokens.dateTypes.options.indexOf(String(type[0]));
   }
 
-  async generateToken(code: string, lexeme: string, line: number, accept?: boolean) {
+  async generateToken(code: string, lexeme: string, line: number, context: number, accept?: boolean) {
     const option = this.possibleTokens[`${code}`];
 
     let newToken;
@@ -377,7 +445,8 @@ export class RegexComponent implements OnInit {
           newToken = {
               line,
               lexeme,
-              token: `${option.id}${option.counter}`
+              token: `${option.id}${option.counter}`,
+              context
           };
 
           this.tokensForTxt.push(`${option.id}${option.counter}`);
@@ -387,12 +456,12 @@ export class RegexComponent implements OnInit {
                 line,
                 lexeme,
                 token: `ERR${option.id}${option.counter}`,
+                context
             };
 
             newToken.message = this.errors[`${option.id}`];
             this.tokenErrors.push(newToken);
             this.tokensForTxt.push(`ERR${option.id}${option.counter}`);
-            console.log(newToken);
         }
         if (JSON.stringify(newToken) !== '{}') {
             this.tokens.push(newToken);
@@ -414,6 +483,7 @@ export class RegexComponent implements OnInit {
   verifyErrorExistence(token: string): boolean {
     let found = false;
 
+    // tslint:disable-next-line: prefer-for-of
     for(let i = 0; i < this.tokenErrors.length; i++) {
       const error = this.tokenErrors[i];
 
