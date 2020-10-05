@@ -63,7 +63,7 @@ export class SemanticErrorsService {
   compare(ante, ahora, siguiente) {
     if (ante === undefined || siguiente === undefined) {
       return 0;
-    }  else if (ante.dataType === undefined || siguiente.dataType === undefined) {
+    }  else if (ante.dataType === 'undefined' || siguiente.dataType === 'undefined') {
       return 0;
     }  else {
       if (ante.dataType === siguiente.dataType) {
