@@ -42,7 +42,6 @@ export class SemanticErrorsService {
           }
           break;
         case token === 'ID':
-          console.log(element);
 
           if (element.dataType === 'undefined') {
             this.numErr++;

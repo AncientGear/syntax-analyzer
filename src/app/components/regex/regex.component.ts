@@ -169,10 +169,12 @@ export class RegexComponent implements OnInit {
     await this.generateToken('dataTypes', type, line, context);
     let codeToCompare = code.split(type)[1].replace(/ /g, '');
 
-    while (codeToCompare.match(/[\w$_(){}["!#%&\/?='¡¿*΅~^`<>|°¬,;-]+/)) {
-      wordToCompare = codeToCompare.match(/[\w]+/)[0];
-      codeToCompare = codeToCompare.replace(wordToCompare, '');
-      await this.postIdentifier(wordToCompare, line, context, type);
+    wordToCompare = codeToCompare.match(/[\w]+/)[0];
+    codeToCompare = codeToCompare.replace(wordToCompare, '');
+    await this.postIdentifier(wordToCompare, line, context, type);
+
+    while (codeToCompare.match(/[\w$_["!#%&\/?='¡¿*΅~^`<>|°¬,-]+/)) {
+
 
       if (codeToCompare.length === 0) {
         await this.postSemiColon('', line, context);
@@ -223,6 +225,12 @@ export class RegexComponent implements OnInit {
         this.postSemiColon(wordToCompare, line, context);
         break;
       }
+    }
+
+    if (codeToCompare.length === 1) {
+      wordToCompare = codeToCompare.match(/./)[0];
+
+      await this.postSemiColon(wordToCompare, line, context);
     }
   }
 
@@ -407,7 +415,8 @@ export class RegexComponent implements OnInit {
 
   async postSemiColon(wordToCompare: string, line: number, context: number) {
 
-    if (wordToCompare.match(/[;]/)) {
+    if (wordToCompare === ';') {
+
       await this.generateToken('miscellaneous', wordToCompare, context, line);
     } else {
       await this.generateToken('miscellaneous', 'null', line, context);
