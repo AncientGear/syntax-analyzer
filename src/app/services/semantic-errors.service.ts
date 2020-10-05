@@ -75,7 +75,7 @@ export class SemanticErrorsService {
         if (ante.context === 'local') {
           this.numErr++;
           this.errsem.push({
-            message: 'ERRSEM'.concat(this.numErr.toString()),
+            token: 'ERRSEM'.concat(this.numErr.toString()),
             lexeme: ante.lexeme,
             line: ante.line,
             description: 'Indefinida la variable'
@@ -84,7 +84,7 @@ export class SemanticErrorsService {
         } else if (siguiente.context === 'local') {
           this.numErr++;
           this.errsem.push({
-            message: 'ERRSEM'.concat(this.numErr.toString()),
+            token: 'ERRSEM'.concat(this.numErr.toString()),
             lexeme: siguiente.lexeme,
             line: siguiente.line,
             description: 'Indefinida la variable'
@@ -94,7 +94,7 @@ export class SemanticErrorsService {
       }  else {
         this.numErr++;
         this.errsem.push({
-          message: 'ERRSEM'.concat(this.numErr.toString()),
+          token: 'ERRSEM'.concat(this.numErr.toString()),
           lexeme: ante.lexeme + ahora.lexeme + siguiente.lexeme,
           line: ahora.line,
           description: 'Incompatibilidad de tipos'
