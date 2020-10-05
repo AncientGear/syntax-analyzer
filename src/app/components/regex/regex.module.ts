@@ -5,6 +5,7 @@ import { ExampleCodeComponent } from '../example-code/example-code.component';
 import { InputCodeComponent } from '../input-code/input-code.component';
 import { TokensTableComponent } from '../tokens-table/tokens-table.component';
 import { ErrorsTableComponent } from '../errors-table/errors-table.component';
+import { SemanticErrorsService } from '../../services/semantic-errors.service';
 
 
 
@@ -17,6 +18,9 @@ import { ErrorsTableComponent } from '../errors-table/errors-table.component';
   ],
   imports: [
     CommonModule
+  ],
+  providers: [
+    SemanticErrorsService
   ]
 })
 export class RegexModule { }

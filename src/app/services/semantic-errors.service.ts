@@ -16,13 +16,24 @@ export class SemanticErrorsService {
   }
 
   analizaTable(tokens) {
+    this.errsem = [];
+    this.numErr = 0;
+    this.islocal = false;
+
     for (let i = 0; i < tokens.length; i++) {
       const element = tokens[i];
-      switch (element) {
-        case element.token === 'OA' || element.token === 'OR':
+      console.log(i);
+
+      console.log(element);
+
+
+      const token = element.token.slice(0, -1);
+
+      switch (element !== undefined) {
+        case token === 'OA' || token === 'OR':
           this.compare(tokens[i - 1], element, tokens[i + 1]);
           break;
-        case element.token === 'DEL':
+        case token === 'DEL':
           switch (element.lexeme) {
             case '{':
               this.islocal = true;
@@ -34,11 +45,12 @@ export class SemanticErrorsService {
               break;
           }
           break;
-        case element.token === 'ID':
+        case token === 'ID':
+
           if (element.dataType === undefined) {
             this.numErr++;
             this.errsem.push({
-              message: 'ERRSEM'.concat(this.numErr.toString()),
+              token: 'ERRSEM'.concat(this.numErr.toString()),
               lexeme: element.lexeme,
               line: element.line,
               description: 'Indefinida la variable'
@@ -47,6 +59,7 @@ export class SemanticErrorsService {
           break;
       }
     }
+
     return this.errsem;
   }
 

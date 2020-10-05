@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core'
+import { Component, OnInit } from '@angular/core';
+import { SemanticErrorsService } from '../../services/semantic-errors.service';
 
 @Component({
   selector: 'app-regex',
@@ -8,12 +9,13 @@ import { Component, OnInit } from '@angular/core'
 export class RegexComponent implements OnInit {
   code = [];
   tokensForTxt = [];
+  tokensForSemantic = [];
   txt: string;
   tokens = [];
   tokenErrors = [];
   context = 0;
   possibleTokens = {
-    dateTypes: {
+    dataTypes: {
       id: 'TD',
       options: ['int', 'char', 'float'],
       counter: 0
@@ -28,9 +30,9 @@ export class RegexComponent implements OnInit {
       options: ['+', '-', '/', '*'],
       counter: 0
     },
-    relationalsOperators: {
+    relationalOperators: {
       id: 'OR',
-      options: ['<', '<==', '>', '>==', '!==', '===', '&&', '||'],
+      options: ['<', '<=', '>', '>=', '!=', '==', '&&', '||'],
       counter: 0
     },
     conditionalOperators: {
@@ -80,7 +82,7 @@ export class RegexComponent implements OnInit {
   vairablesRegEx = /^[a-zA-Z][\w$]*/;
   numbersRegEx = /[\d]*[.]*[\d]*/;
   arimeticOpRegEx = /^[+-\/*]/;
-  constructor() { }
+  constructor(private semanticErrorService: SemanticErrorsService) { }
 
   ngOnInit(): void { }
 
@@ -90,6 +92,7 @@ export class RegexComponent implements OnInit {
     this.tokens = [];
     this.tokenErrors = [];
     this.tokensForTxt = [];
+    this.tokensForSemantic = [];
 
     await this.analyzeCode();
   }
@@ -119,6 +122,10 @@ export class RegexComponent implements OnInit {
       }
     }
 
+    const semanticErrors = await this.semanticErrorService.analizaTable(this.tokensForSemantic);
+
+    this.tokenErrors = this.tokenErrors.concat(semanticErrors);
+
     this.txt = this.tokensForTxt.join(' ');
   }
 
@@ -142,10 +149,10 @@ export class RegexComponent implements OnInit {
     tokens.arimeticOperators.counter = 0;
     tokens.assignationOperator.counter = 0;
     tokens.conditionalOperators.counter = 0;
-    tokens.dateTypes.counter = 0;
+    tokens.dataTypes.counter = 0;
     tokens.delimiters.counter = 0;
     tokens.miscellaneous.counter = 0;
-    tokens.relationalsOperators.counter = 0;
+    tokens.relationalOperators.counter = 0;
     tokens.notFound.counter = 0;
     tokens.identifier.counter = 0;
     tokens.iterator.counter = 0;
@@ -157,20 +164,20 @@ export class RegexComponent implements OnInit {
     let wordToCompare = '';
 
     let type = await this.verifyType(code);
-    type = this.possibleTokens.dateTypes.options[type] || code.split(' ')[0];
+    type = this.possibleTokens.dataTypes.options[type] || code.split(' ')[0];
 
-    await this.generateToken('dateTypes', type, line, context);
+    await this.generateToken('dataTypes', type, line, context);
     let codeToCompare = code.split(type)[1].replace(/ /g, '');
 
     while (codeToCompare.match(/[\w$_(){}["!#%&\/?='¡¿*΅~^`<>|°¬,;-]+/)) {
       wordToCompare = codeToCompare.match(/[\w]+/)[0];
       codeToCompare = codeToCompare.replace(wordToCompare, '');
+      await this.postIdentifier(wordToCompare, line, context, type);
 
       if (codeToCompare.length === 0) {
         await this.postSemiColon('', line, context);
         break;
       }
-      await this.postIdentifier(wordToCompare, line, context);
 
       wordToCompare = codeToCompare.match(/./)[0];
       codeToCompare = codeToCompare.replace(/./, '');
@@ -291,13 +298,25 @@ export class RegexComponent implements OnInit {
     await this.postDelimiter(wordToCompare, line, context);
 
 
-    const verifyConditions = codeToCompare.match(/^[\w$_(){}["!#%&\/?='¡¿*΅~^`<>|°¬,;]*/)[0];
+    let conditions = codeToCompare.match(/^[\w$_"!#%&\/?='¡¿*΅~^`<>|°¬,]*/)[0];
+    codeToCompare = codeToCompare.replace(conditions, '');
 
-    if (verifyConditions.length !== 0) {
-      const conditions  = verifyConditions.split(';');
-      conditions.forEach(condition => {
 
-      });
+    if (conditions.length !== 0) {
+
+      while (conditions.length > 0) {
+
+        const condition = conditions.match(/^[\w\d\.*$_"!#%\/?'¡¿*΅~^`°¬,]+/)[0];
+        conditions = conditions.replace(condition, '');
+        await this.postIdentifier(condition, line, context);
+
+        if (conditions.length === 0 ) { break; }
+
+        const conditional = conditions.match(/^[&=<>|][&=<>|]/)[0];
+        conditions = conditions.replace(conditional, '');
+
+        await this.postRelationalOperators(conditional, line, context);
+      }
     }
 
     wordToCompare = codeToCompare.match(/^./)[0];
@@ -308,15 +327,20 @@ export class RegexComponent implements OnInit {
     codeToCompare = codeToCompare.replace(wordToCompare, '');
     await this.postDelimiter(wordToCompare, line, context);
 
+    this.tokensForTxt.push('\n');
+
     // tslint:disable-next-line: prefer-for-of
     for (let i = 0; i < this.code.length; i++) {
       const str = this.code.shift();
+      line++;
       if (!str.match(/}.*/)) {
-        line++;
         i--;
-        codeToCompare = str;
-
+        codeToCompare = str.replace(/^[ ]*/, '');
+        await this.verifyLineCodeType(codeToCompare, line, context);
       } else {
+        wordToCompare = str;
+
+        await this.postDelimiter(wordToCompare, line, context);
         break;
       }
     }
@@ -324,6 +348,9 @@ export class RegexComponent implements OnInit {
     return line;
   }
 
+  async postRelationalOperators(wordToCompare: string, line: number, context: number) {
+    await this.generateToken('relationalOperators', wordToCompare, line, context);
+  }
 
   async postDelimiter(wordToCompare: string, line: number, context: number) {
     if (wordToCompare.match(/(|)|{|}|[|]/)) {
@@ -356,7 +383,7 @@ export class RegexComponent implements OnInit {
     wordToCompare = wordToCompare.replace(/'/g, '');
 
     if (wordToCompare.length === 1 && wordToCompare) {
-      await this.generateToken('identifier', wordToCompare, line, context, true);
+      await this.generateToken('identifier', wordToCompare, line, context, true, 'char');
     } else {
       await this.generateToken('identifier', wordToCompare, line, context, false);
     }
@@ -364,7 +391,7 @@ export class RegexComponent implements OnInit {
 
   async postNumber(wordToCompare: string, line: number, context: number) {
     if (Number(wordToCompare)) {
-      await this.generateToken('identifier', wordToCompare, line, context, true);
+      await this.generateToken('identifier', wordToCompare, line, context, true, 'number');
     } else {
       await this.generateToken('identifier', wordToCompare, line, context, false);
     }
@@ -395,10 +422,10 @@ export class RegexComponent implements OnInit {
     }
   }
 
-  async postIdentifier(wordToCompare: string, line: number, context: number) {
+  async postIdentifier(wordToCompare: string, line: number, context: number, type?: string) {
 
     if (wordToCompare.match(this.vairablesRegEx)) {
-      await this.generateToken('identifier', wordToCompare, line, context, true);
+      await this.generateToken('identifier', wordToCompare, line, context, true, type);
     } else {
       await this.generateToken('identifier', wordToCompare, line, context);
     }
@@ -413,12 +440,12 @@ export class RegexComponent implements OnInit {
   }
 
   isDeclaration(code: string) {
-    const option = /^[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬,;-]+ [\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬,;-]+/;
+    const option = /^[\w$_["!#%&\/?'¡¿*΅~^`<>|°¬,;-]+ [\w$_["!#%&\/?'¡¿*΅~^`<>|°¬,;-]+/;
     return (code.match(option)) ? true : false;
   }
 
   isAssignation(code: string) {
-    const option =  /^[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬]+[ ]*=[ ]*[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬,;-]*/;
+    const option =  /^[\w$_["!#%&\/?'¡¿*΅~^`<>|°¬]+[ ]*=[ ]*[\w$_["!#%&\/?'¡¿*΅~^`<>|°¬,;-]*/;
     return (code.match(option)) ? true : false;
   }
 
@@ -433,10 +460,10 @@ export class RegexComponent implements OnInit {
   verifyType(code: string): any {
     const type = code.match(/^[\w$_(){}["!#%&\/?'¡¿*΅~^`<>|°¬,;-]+/);
 
-    return this.possibleTokens.dateTypes.options.indexOf(String(type[0]));
+    return this.possibleTokens.dataTypes.options.indexOf(String(type[0]));
   }
 
-  async generateToken(code: string, lexeme: string, line: number, context: number, accept?: boolean) {
+  async generateToken(code: string, lexeme: string, line: number, context: number, accept?: boolean, dataType?: string) {
     const option = this.possibleTokens[`${code}`];
 
     let newToken;
@@ -448,6 +475,7 @@ export class RegexComponent implements OnInit {
 
     if (exist !== false) {
         this.tokensForTxt.push(this.tokens[exist].token);
+        this.tokensForSemantic.push(this.tokens[exist]);
     } else {
         option.counter++;
         if (option.options.indexOf(lexeme) !== -1 || accept === true) {
@@ -456,22 +484,26 @@ export class RegexComponent implements OnInit {
               line,
               lexeme,
               token: `${option.id}${option.counter}`,
-              context
+              context,
+              dataType: dataType || undefined
           };
 
           this.tokensForTxt.push(`${option.id}${option.counter}`);
+          this.tokensForSemantic.push(newToken);
 
         } else {
             newToken = {
                 line,
                 lexeme,
                 token: `ERR${option.id}${option.counter}`,
-                context
+                context,
+                dataType: dataType || undefined
             };
 
             newToken.message = this.errors[`${option.id}`];
             this.tokenErrors.push(newToken);
             this.tokensForTxt.push(`ERR${option.id}${option.counter}`);
+            this.tokensForSemantic.push(newToken);
         }
         if (JSON.stringify(newToken) !== '{}') {
             this.tokens.push(newToken);
