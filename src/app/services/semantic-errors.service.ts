@@ -22,13 +22,9 @@ export class SemanticErrorsService {
 
     for (let i = 0; i < tokens.length; i++) {
       const element = tokens[i];
-      console.log(i);
-
-      console.log(element);
 
 
       const token = element.token.slice(0, -1);
-
       switch (element !== undefined) {
         case token === 'OA' || token === 'OR':
           this.compare(tokens[i - 1], element, tokens[i + 1]);
@@ -46,14 +42,15 @@ export class SemanticErrorsService {
           }
           break;
         case token === 'ID':
+          console.log(element);
 
-          if (element.dataType === undefined) {
+          if (element.dataType === 'undefined') {
             this.numErr++;
             this.errsem.push({
               token: 'ERRSEM'.concat(this.numErr.toString()),
               lexeme: element.lexeme,
               line: element.line,
-              description: 'Indefinida la variable'
+              message: 'Indefinida la variable'
             });
           }
           break;
@@ -78,7 +75,7 @@ export class SemanticErrorsService {
             token: 'ERRSEM'.concat(this.numErr.toString()),
             lexeme: ante.lexeme,
             line: ante.line,
-            description: 'Indefinida la variable'
+            message: 'Indefinida la variable'
           });
           return 0;
         } else if (siguiente.context === 'local') {
@@ -87,7 +84,7 @@ export class SemanticErrorsService {
             token: 'ERRSEM'.concat(this.numErr.toString()),
             lexeme: siguiente.lexeme,
             line: siguiente.line,
-            description: 'Indefinida la variable'
+            message: 'Indefinida la variable'
           });
           return 0;
         }
@@ -97,7 +94,7 @@ export class SemanticErrorsService {
           token: 'ERRSEM'.concat(this.numErr.toString()),
           lexeme: ante.lexeme + ahora.lexeme + siguiente.lexeme,
           line: ahora.line,
-          description: 'Incompatibilidad de tipos'
+          message: 'Incompatibilidad de tipos'
         });
       }
     }
