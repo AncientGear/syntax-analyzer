@@ -485,7 +485,7 @@ export class RegexComponent implements OnInit {
               lexeme,
               token: `${option.id}${option.counter}`,
               context,
-              dataType: dataType || undefined
+              dataType: dataType || 'undefined'
           };
 
           this.tokensForTxt.push(`${option.id}${option.counter}`);
@@ -497,7 +497,7 @@ export class RegexComponent implements OnInit {
                 lexeme,
                 token: `ERR${option.id}${option.counter}`,
                 context,
-                dataType: dataType || undefined
+                dataType: dataType || 'undefined'
             };
 
             newToken.message = this.errors[`${option.id}`];
