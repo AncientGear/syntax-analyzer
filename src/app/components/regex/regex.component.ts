@@ -300,6 +300,14 @@ export class RegexComponent implements OnInit {
       });
     }
 
+    wordToCompare = codeToCompare.match(/^./)[0];
+    codeToCompare = codeToCompare.replace(wordToCompare, '');
+    await this.postDelimiter(wordToCompare, line, context);
+
+    wordToCompare = codeToCompare.match(/^./)[0];
+    codeToCompare = codeToCompare.replace(wordToCompare, '');
+    await this.postDelimiter(wordToCompare, line, context);
+
     // tslint:disable-next-line: prefer-for-of
     for (let i = 0; i < this.code.length; i++) {
       const str = this.code.shift();
@@ -319,6 +327,8 @@ export class RegexComponent implements OnInit {
 
   async postDelimiter(wordToCompare: string, line: number, context: number) {
     if (wordToCompare.match(/(|)|{|}|[|]/)) {
+      await this.generateToken('delimiters', wordToCompare, line, context);
+    } else {
       await this.generateToken('delimiters', wordToCompare, line, context);
     }
   }
@@ -415,7 +425,7 @@ export class RegexComponent implements OnInit {
 
   isWhile(code: string) {
 
-    const option = /\w+\([\w><=& |;]*\){/;
+    const option = /\w+\(*[\w_\/#$"!|°¬\'?¿¡.,0-9:><=& |]*\)*{*/;
 
     return (code.match(option)) ? true : false;
   }
@@ -484,10 +494,10 @@ export class RegexComponent implements OnInit {
     let found = false;
 
     // tslint:disable-next-line: prefer-for-of
-    for(let i = 0; i < this.tokenErrors.length; i++) {
+    for (let i = 0; i < this.tokenErrors.length; i++) {
       const error = this.tokenErrors[i];
 
-      if(error.tokenError === token) {
+      if (error.tokenError === token) {
         found = true;
         break;
       }

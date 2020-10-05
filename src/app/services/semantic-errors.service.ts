@@ -29,12 +29,13 @@ export class SemanticErrorsService {
               break;
             case '}':
               this.islocal = false;
+              break;
             default:
               break;
           }
           break;
         case element.token === 'ID':
-          if (element.dataType = undefined) {
+          if (element.dataType === undefined) {
             this.numErr++;
             this.errsem.push({
               message: 'ERRSEM'.concat(this.numErr.toString()),
@@ -52,15 +53,12 @@ export class SemanticErrorsService {
   compare(ante, ahora, siguiente) {
     if (ante === undefined || siguiente === undefined) {
       return 0;
-    }
-    else if (ante.dataType === undefined || siguiente.dataType === undefined) {
+    }  else if (ante.dataType === undefined || siguiente.dataType === undefined) {
       return 0;
-    }
-    else {
+    }  else {
       if (ante.dataType === siguiente.dataType) {
         return 1;
-      }
-      else if (this.islocal === false && (ante.context === 'local' || siguiente.context === 'local')) {
+      }  else if (this.islocal === false && (ante.context === 'local' || siguiente.context === 'local')) {
         if (ante.context === 'local') {
           this.numErr++;
           this.errsem.push({
@@ -70,8 +68,7 @@ export class SemanticErrorsService {
             description: 'Indefinida la variable'
           });
           return 0;
-        }
-        else if (siguiente.context === 'local') {
+        } else if (siguiente.context === 'local') {
           this.numErr++;
           this.errsem.push({
             message: 'ERRSEM'.concat(this.numErr.toString()),
@@ -81,8 +78,7 @@ export class SemanticErrorsService {
           });
           return 0;
         }
-      }
-      else {
+      }  else {
         this.numErr++;
         this.errsem.push({
           message: 'ERRSEM'.concat(this.numErr.toString()),
