@@ -12,6 +12,7 @@ export class RegexComponent implements OnInit {
   tokensForSemantic = [];
   txt: string;
   tokens = [];
+  tokensForTriplo = [];
   tokenErrors = [];
   context = 0;
   possibleTokens = {
@@ -79,7 +80,7 @@ export class RegexComponent implements OnInit {
     NF: 'Not Found'
   };
   charRegEx = /./;
-  vairablesRegEx = /^[a-zA-Z][\w$]*/;
+  vairablesRegEx = /^[a-zA-Z][\w0-9$]*|[0-9]*/;
   numbersRegEx = /[\d]*[.]*[\d]*/;
   arimeticOpRegEx = /^[+-\/*]/;
   constructor(private semanticErrorService: SemanticErrorsService) { }
@@ -93,6 +94,7 @@ export class RegexComponent implements OnInit {
     this.tokenErrors = [];
     this.tokensForTxt = [];
     this.tokensForSemantic = [];
+    this.tokensForTriplo = [];
 
     await this.analyzeCode();
   }
@@ -101,6 +103,8 @@ export class RegexComponent implements OnInit {
     this.inizializeCounters();
     // tslint:disable-next-line: prefer-for-of
     let line = 1;
+    console.log(this.code);
+
     for (let i = 0; i < this.code.length; i++) {
 
       const code = this.code.shift();
@@ -140,6 +144,7 @@ export class RegexComponent implements OnInit {
       line = await this.While(code, line, context);
     }
 
+    this.tokensForTriplo.push('\n');
     return line;
   }
 
@@ -168,7 +173,7 @@ export class RegexComponent implements OnInit {
 
     await this.generateToken('dataTypes', type, line, context);
     let codeToCompare = code.split(type)[1].replace(/ /g, '');
-
+    //
     wordToCompare = codeToCompare.match(/[\w]+/)[0];
     codeToCompare = codeToCompare.replace(wordToCompare, '');
     await this.postIdentifier(wordToCompare, line, context, type);
@@ -223,6 +228,7 @@ export class RegexComponent implements OnInit {
         await this.postColon(wordToCompare, line, context);
       } else {
         this.postSemiColon(wordToCompare, line, context);
+        codeToCompare = codeToCompare.replace(/./, '');
         break;
       }
     }
@@ -316,6 +322,8 @@ export class RegexComponent implements OnInit {
 
         const condition = conditions.match(/^[\w\d\.*$_"!#%\/?'¡¿*΅~^`°¬,]+/)[0];
         conditions = conditions.replace(condition, '');
+        console.log(condition);
+
         await this.postIdentifier(condition, line, context);
 
         if (conditions.length === 0 ) { break; }
@@ -433,6 +441,10 @@ export class RegexComponent implements OnInit {
 
   async postIdentifier(wordToCompare: string, line: number, context: number, type?: string) {
 
+    if ( Number(wordToCompare) || type === 'int' || type === 'float') {
+      type = 'number';
+    }
+
     if (wordToCompare.match(this.vairablesRegEx)) {
       await this.generateToken('identifier', wordToCompare, line, context, true, type);
     } else {
@@ -479,12 +491,18 @@ export class RegexComponent implements OnInit {
     if (accept === undefined) {
         accept = false;
     }
+    console.log(lexeme, dataType, line);
 
-    const exist = await this.verifyTokenExistence(lexeme);
+    const {found, index} = await this.verifyTokenExistence(lexeme);
 
-    if (exist !== false) {
-        this.tokensForTxt.push(this.tokens[exist].token);
-        this.tokensForSemantic.push(this.tokens[exist]);
+    if (found !== false) {
+        this.tokensForTxt.push(this.tokens[index].token);
+        this.tokensForSemantic.push(this.tokens[index]);
+        if (option.id === 'ID' || option.id === 'AS' || option.id === 'OR' || option.id === 'OA') {
+          console.log(this.tokens[index]);
+
+          this.tokensForTriplo.push(this.tokens[index]);
+        }
     } else {
         option.counter++;
         if (option.options.indexOf(lexeme) !== -1 || accept === true) {
@@ -493,6 +511,7 @@ export class RegexComponent implements OnInit {
               line,
               lexeme,
               token: `${option.id}${option.counter}`,
+              id: option.id,
               context,
               dataType: dataType || 'undefined'
           };
@@ -500,11 +519,16 @@ export class RegexComponent implements OnInit {
           this.tokensForTxt.push(`${option.id}${option.counter}`);
           this.tokensForSemantic.push(newToken);
 
+          if (option.id === 'ID' || option.id === 'AS' || option.id === 'OR' || option.id === 'OA') {
+            this.tokensForTriplo.push(newToken);
+          }
+
         } else {
             newToken = {
                 line,
                 lexeme,
                 token: `ERR${option.id}${option.counter}`,
+                id: option.id,
                 context,
                 dataType: dataType || 'undefined'
             };
@@ -513,22 +537,30 @@ export class RegexComponent implements OnInit {
             this.tokenErrors.push(newToken);
             this.tokensForTxt.push(`ERR${option.id}${option.counter}`);
             this.tokensForSemantic.push(newToken);
+
+            if (option.id === 'ID' || option.id === 'AS' || option.id === 'OR' || option.id === 'OA') {
+              this.tokensForTriplo.push(newToken);
+            }
         }
         if (JSON.stringify(newToken) !== '{}') {
             this.tokens.push(newToken);
         }
+        console.log(this.tokensForTriplo);
+
       }
   }
 
   verifyTokenExistence(lexeme: string) {
-
+    let index;
+    let found=false;
     for (let i = 0; i < this.tokens.length; i++) {
       const token = this.tokens[i];
       if (token.lexeme === lexeme) {
-        return i;
+        index = i;
+        found = true;
       }
     }
-    return false;
+    return {found, index};
   }
 
   verifyErrorExistence(token: string): boolean {

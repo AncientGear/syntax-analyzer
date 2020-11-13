@@ -1,0 +1,8 @@
+1. Instalar Node JS
+2. Instalar NPM
+3. Instalar Angular 9
+4. Entrar en la terminal de comando, y nos posicionamos en la carpeta del proyecto
+5. Corremos los siguientes comandos en orden:
+  npm install
+  ng serve -o
+6. Esperamos a que el servidor corra y se abra nuestro programa.

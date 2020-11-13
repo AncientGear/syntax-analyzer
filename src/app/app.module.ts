@@ -13,6 +13,9 @@ import { InputCodeComponent } from './components/input-code/input-code.component
 import { TokensTableComponent } from './components/tokens-table/tokens-table.component';
 import { ErrorsTableComponent } from './components/errors-table/errors-table.component';
 import { DownloadTxtComponent } from './components/download-txt/download-txt.component';
+import { TriploComponent } from './triplo/triplo.component';
+import { TriploService } from './services/triplo/triplo.service';
+import { HttpClientModule } from '@angular/common/http';
 
 @NgModule({
   declarations: [
@@ -24,14 +27,18 @@ import { DownloadTxtComponent } from './components/download-txt/download-txt.com
     InputCodeComponent,
     TokensTableComponent,
     ErrorsTableComponent,
-    DownloadTxtComponent
+    DownloadTxtComponent,
+    TriploComponent
   ],
   imports: [
     BrowserModule,
     APP_ROUTING,
-    NgbModule
+    NgbModule,
+    HttpClientModule
   ],
-  providers: [],
+  providers: [
+    TriploService
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

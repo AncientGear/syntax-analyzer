@@ -6,6 +6,7 @@ import { InputCodeComponent } from '../input-code/input-code.component';
 import { TokensTableComponent } from '../tokens-table/tokens-table.component';
 import { ErrorsTableComponent } from '../errors-table/errors-table.component';
 import { SemanticErrorsService } from '../../services/semantic-errors.service';
+import { TriploComponent } from '../../triplo/triplo.component';
 
 
 
@@ -14,7 +15,8 @@ import { SemanticErrorsService } from '../../services/semantic-errors.service';
     ExampleCodeComponent,
     InputCodeComponent,
     TokensTableComponent,
-    ErrorsTableComponent
+    ErrorsTableComponent,
+    TriploComponent
   ],
   imports: [
     CommonModule
