@@ -19,8 +19,13 @@ export class TriploComponent implements OnInit {
   download() {
     console.log('Descargar triplo');
     this.activatedRoute.params.subscribe((params) => {
-      this.triploService.getTriplo(this.tokens).subscribe((res) => {
-        console.log(res);
+      this.triploService.getPrefix(this.tokens).subscribe((res) => {
+        const { prefixArray } = res.data;
+
+
+        this.triploService.getTriplo(prefixArray).subscribe((triplo) => {
+          console.log(triplo);
+        });
       });
     });
   }

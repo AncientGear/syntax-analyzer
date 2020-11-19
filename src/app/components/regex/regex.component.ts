@@ -33,7 +33,7 @@ export class RegexComponent implements OnInit {
     },
     relationalOperators: {
       id: 'OR',
-      options: ['<', '<=', '>', '>=', '!=', '==', '&&', '||'],
+      options: ['<', '<=', '>', '>=', '!=', '==', '&&', '||', '!='],
       counter: 0
     },
     conditionalOperators: {
@@ -103,7 +103,6 @@ export class RegexComponent implements OnInit {
     this.inizializeCounters();
     // tslint:disable-next-line: prefer-for-of
     let line = 1;
-    console.log(this.code);
 
     for (let i = 0; i < this.code.length; i++) {
 
@@ -320,15 +319,14 @@ export class RegexComponent implements OnInit {
 
       while (conditions.length > 0) {
 
-        const condition = conditions.match(/^[\w\d\.*$_"!#%\/?'¡¿*΅~^`°¬,]+/)[0];
+        const condition = conditions.match(/^[\w\d\.*$_"#%\/?'¡¿*΅~^`°¬,]+/)[0];
         conditions = conditions.replace(condition, '');
-        console.log(condition);
 
         await this.postIdentifier(condition, line, context);
 
         if (conditions.length === 0 ) { break; }
 
-        const conditional = conditions.match(/^[&=<>|][&=<>|]/)[0];
+        const conditional = conditions.match(/^[&=<>|][&=<>|]|\<|\>|\!=/)[0];
         conditions = conditions.replace(conditional, '');
 
         await this.postRelationalOperators(conditional, line, context);
@@ -344,6 +342,7 @@ export class RegexComponent implements OnInit {
     await this.postDelimiter(wordToCompare, line, context);
 
     this.tokensForTxt.push('\n');
+    this.tokensForTriplo.push('\n');
 
     // tslint:disable-next-line: prefer-for-of
     for (let i = 0; i < this.code.length; i++) {
@@ -491,17 +490,17 @@ export class RegexComponent implements OnInit {
     if (accept === undefined) {
         accept = false;
     }
-    console.log(lexeme, dataType, line);
 
     const {found, index} = await this.verifyTokenExistence(lexeme);
 
     if (found !== false) {
         this.tokensForTxt.push(this.tokens[index].token);
         this.tokensForSemantic.push(this.tokens[index]);
-        if (option.id === 'ID' || option.id === 'AS' || option.id === 'OR' || option.id === 'OA') {
-          console.log(this.tokens[index]);
+        if (option.id === 'ID' || option.id === 'AS' || option.id === 'OR' || option.id === 'OA' || option.id === 'IT') {
+          const token = {...this.tokens[index]};
+          token.context = context;
 
-          this.tokensForTriplo.push(this.tokens[index]);
+          this.tokensForTriplo.push(token);
         }
     } else {
         option.counter++;
@@ -519,7 +518,7 @@ export class RegexComponent implements OnInit {
           this.tokensForTxt.push(`${option.id}${option.counter}`);
           this.tokensForSemantic.push(newToken);
 
-          if (option.id === 'ID' || option.id === 'AS' || option.id === 'OR' || option.id === 'OA') {
+          if (option.id === 'ID' || option.id === 'AS' || option.id === 'OR' || option.id === 'OA' || option.id === 'IT') {
             this.tokensForTriplo.push(newToken);
           }
 
@@ -538,14 +537,13 @@ export class RegexComponent implements OnInit {
             this.tokensForTxt.push(`ERR${option.id}${option.counter}`);
             this.tokensForSemantic.push(newToken);
 
-            if (option.id === 'ID' || option.id === 'AS' || option.id === 'OR' || option.id === 'OA') {
+            if (option.id === 'ID' || option.id === 'AS' || option.id === 'OR' || option.id === 'OA' || option.id === 'IT') {
               this.tokensForTriplo.push(newToken);
             }
         }
         if (JSON.stringify(newToken) !== '{}') {
             this.tokens.push(newToken);
         }
-        console.log(this.tokensForTriplo);
 
       }
   }
