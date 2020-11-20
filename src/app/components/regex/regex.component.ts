@@ -188,7 +188,7 @@ export class RegexComponent implements OnInit {
       wordToCompare = codeToCompare.match(/./)[0];
       codeToCompare = codeToCompare.replace(/./, '');
 
-      if (codeToCompare.length === 0 ) {
+      if (codeToCompare.length === 0) {
         await this.postSemiColon('', line, context);
         break;
       }
@@ -198,7 +198,7 @@ export class RegexComponent implements OnInit {
       wordToCompare = codeToCompare.match(/[a-zA-Z0-9$_()\.{}["!#%&\/?'¡¿*΅~^`<>|°¬-]+/)[0];
       const possibleColon = wordToCompare.split('')[0];
 
-      if(possibleColon === '\'') {
+      if (possibleColon === '\'') {
         codeToCompare = codeToCompare.replace(possibleColon, '');
         await this.postMiscellaneous(possibleColon, line, context);
 
@@ -215,7 +215,7 @@ export class RegexComponent implements OnInit {
         await this.postIdentifier(wordToCompare, line, context);
         codeToCompare = codeToCompare.replace(wordToCompare, '');
       }
-      if(codeToCompare.length === 0 ){
+      if (codeToCompare.length === 0) {
         await this.postSemiColon('', line, context);
         break;
       }
@@ -261,12 +261,12 @@ export class RegexComponent implements OnInit {
       if (Number(wordToCompare)) {
 
         await this.postNumber(wordToCompare, line, context);
-      } else{
+      } else {
         await this.postIdentifier(wordToCompare, line, context);
       }
 
       codeToCompare = codeToCompare.replace(wordToCompare, '');
-      if (codeToCompare.length === 0 ) {
+      if (codeToCompare.length === 0) {
         await this.postSemiColon('', line, context);
         break;
       }
@@ -277,7 +277,7 @@ export class RegexComponent implements OnInit {
         break;
       }
       codeToCompare = codeToCompare.replace(/^[ ]/, '');
-      if(codeToCompare.length > 0) {
+      if (codeToCompare.length > 0) {
 
         wordToCompare = codeToCompare.match(/[+-/*]+/)[0];
         codeToCompare = codeToCompare.replace(wordToCompare, '');
@@ -324,7 +324,7 @@ export class RegexComponent implements OnInit {
 
         await this.postIdentifier(condition, line, context);
 
-        if (conditions.length === 0 ) { break; }
+        if (conditions.length === 0) { break; }
 
         const conditional = conditions.match(/^[&=<>|][&=<>|]|\<|\>|\!=/)[0];
         conditions = conditions.replace(conditional, '');
@@ -440,7 +440,7 @@ export class RegexComponent implements OnInit {
 
   async postIdentifier(wordToCompare: string, line: number, context: number, type?: string) {
 
-    if ( Number(wordToCompare) || type === 'int' || type === 'float') {
+    if (Number(wordToCompare) || type === 'int' || type === 'float') {
       type = 'number';
     }
 
@@ -465,7 +465,7 @@ export class RegexComponent implements OnInit {
   }
 
   isAssignation(code: string) {
-    const option =  /^[\w$_["!#%&\/?'¡¿*΅~^`<>|°¬]+[ ]*=[ ]*[\w$_["!#%&\/?'¡¿*΅~^`<>|°¬,;-]*/;
+    const option = /^[\w$_["!#%&\/?'¡¿*΅~^`<>|°¬]+[ ]*=[ ]*[\w$_["!#%&\/?'¡¿*΅~^`<>|°¬,;-]*/;
     return (code.match(option)) ? true : false;
   }
 
@@ -488,69 +488,69 @@ export class RegexComponent implements OnInit {
 
     let newToken;
     if (accept === undefined) {
-        accept = false;
+      accept = false;
     }
 
-    const {found, index} = await this.verifyTokenExistence(lexeme);
+    const { found, index } = await this.verifyTokenExistence(lexeme);
 
     if (found !== false) {
-        this.tokensForTxt.push(this.tokens[index].token);
-        this.tokensForSemantic.push(this.tokens[index]);
-        if (option.id === 'ID' || option.id === 'AS' || option.id === 'OR' || option.id === 'OA' || option.id === 'IT') {
-          const token = {...this.tokens[index]};
-          token.context = context;
+      this.tokensForTxt.push(this.tokens[index].token);
+      this.tokensForSemantic.push(this.tokens[index]);
+      if (option.id === 'ID' || option.id === 'AS' || option.id === 'OR' || option.id === 'OA' || option.id === 'IT') {
+        const token = { ...this.tokens[index] };
+        token.context = context;
 
-          this.tokensForTriplo.push(token);
-        }
-    } else {
-        option.counter++;
-        if (option.options.indexOf(lexeme) !== -1 || accept === true) {
-
-          newToken = {
-              line,
-              lexeme,
-              token: `${option.id}${option.counter}`,
-              id: option.id,
-              context,
-              dataType: dataType || 'undefined'
-          };
-
-          this.tokensForTxt.push(`${option.id}${option.counter}`);
-          this.tokensForSemantic.push(newToken);
-
-          if (option.id === 'ID' || option.id === 'AS' || option.id === 'OR' || option.id === 'OA' || option.id === 'IT') {
-            this.tokensForTriplo.push(newToken);
-          }
-
-        } else {
-            newToken = {
-                line,
-                lexeme,
-                token: `ERR${option.id}${option.counter}`,
-                id: option.id,
-                context,
-                dataType: dataType || 'undefined'
-            };
-
-            newToken.message = this.errors[`${option.id}`];
-            this.tokenErrors.push(newToken);
-            this.tokensForTxt.push(`ERR${option.id}${option.counter}`);
-            this.tokensForSemantic.push(newToken);
-
-            if (option.id === 'ID' || option.id === 'AS' || option.id === 'OR' || option.id === 'OA' || option.id === 'IT') {
-              this.tokensForTriplo.push(newToken);
-            }
-        }
-        if (JSON.stringify(newToken) !== '{}') {
-            this.tokens.push(newToken);
-        }
-
+        this.tokensForTriplo.push(token);
       }
+    } else {
+      option.counter++;
+      if (option.options.indexOf(lexeme) !== -1 || accept === true) {
+
+        newToken = {
+          line,
+          lexeme,
+          token: `${option.id}${option.counter}`,
+          id: option.id,
+          context,
+          dataType: dataType || 'undefined'
+        };
+
+        this.tokensForTxt.push(`${option.id}${option.counter}`);
+        this.tokensForSemantic.push(newToken);
+
+        if (option.id === 'ID' || option.id === 'AS' || option.id === 'OR' || option.id === 'OA' || option.id === 'IT') {
+          this.tokensForTriplo.push(newToken);
+        }
+
+      } else {
+        newToken = {
+          line,
+          lexeme,
+          token: `ERR${option.id}${option.counter}`,
+          id: option.id,
+          context,
+          dataType: dataType || 'undefined'
+        };
+
+        newToken.message = this.errors[`${option.id}`];
+        this.tokenErrors.push(newToken);
+        this.tokensForTxt.push(`ERR${option.id}${option.counter}`);
+        this.tokensForSemantic.push(newToken);
+
+        if (option.id === 'ID' || option.id === 'AS' || option.id === 'OR' || option.id === 'OA' || option.id === 'IT') {
+          this.tokensForTriplo.push(newToken);
+        }
+      }
+      if (JSON.stringify(newToken) !== '{}') {
+        this.tokens.push(newToken);
+      }
+
+    }
   }
 
   verifyTokenExistence(lexeme: string) {
     let index;
-    let found=false;
+    let found = false;
     for (let i = 0; i < this.tokens.length; i++) {
       const token = this.tokens[i];
       if (token.lexeme === lexeme) {
@@ -558,7 +558,7 @@ export class RegexComponent implements OnInit {
         found = true;
       }
     }
-    return {found, index};
+    return { found, index };
   }
 
   verifyErrorExistence(token: string): boolean {
@@ -585,8 +585,6 @@ export class RegexComponent implements OnInit {
       line,
       messageError
     };
-
     this.tokenErrors.push(error);
-
   }
 }

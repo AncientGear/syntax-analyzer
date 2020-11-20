@@ -24,6 +24,8 @@ export class TriploComponent implements OnInit {
 
 
         this.triploService.getTriplo(prefixArray).subscribe((triplo) => {
+          console.log('1');
+
           console.log(triplo);
         });
       });
