@@ -10,7 +10,7 @@ import { TriploService } from '../../services/triplo/triplo.service';
 export class TriploComponent implements OnInit {
 
   tablaTxt = '';
-   
+
   @Input() tokens = [];
 
   constructor(private activatedRoute: ActivatedRoute, private triploService: TriploService) { }
@@ -19,13 +19,14 @@ export class TriploComponent implements OnInit {
   }
 
   download() {
-    console.log('Descargar triplo');
+    this.tablaTxt = '';
     this.activatedRoute.params.subscribe((params) => {
       this.triploService.getPrefix(this.tokens).subscribe((res) => {
         const { prefixArray } = res.data;
-          this.triploService.getTriplo(prefixArray).subscribe((triplo) => {
-          const element = document.getElementById('downloadXls');
-          this.generarTxtTriplo(triplo);
+        this.triploService.getTriplo(prefixArray).subscribe(async (triplo) => {
+          const element = document.getElementById('download-triplo');
+          await this.generarTxtTriplo(triplo.triploArr);
+
           element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(this.tablaTxt));
         });
       });
@@ -33,14 +34,10 @@ export class TriploComponent implements OnInit {
   }
 
   generarTxtTriplo(triplo) {
-  //   tablaTxt =  `#\t\tDato Objeto\t\tDato Fuente\t\tOperador \n`;
+    this.tablaTxt = `#\t\tDato Objeto\t\tDato Fuente\t\tOperador \n`;
 
-  //   for(let i = 0; i < triplo.length; i++) {
-  //       `tablaTxt += ${i}\t\t
-  //       tablaTxt += ${triplo[i].from}\t\t
-  //       tablaTxt += ${triplo[i].to}\t\t
-  //       tablaTxt += ${triplo[i].op}\t\t
-  //       tablaTxt += \n`
-  //   }
+    for (let i = 0; i < triplo.length; i++) {
+      this.tablaTxt += `${i}\t\t${triplo[i].to}\t\t\t${triplo[i].from}\t\t\t${triplo[i].op}\t\t\n`;
+    }
   }
 }
