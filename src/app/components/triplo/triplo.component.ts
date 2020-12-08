@@ -1,6 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { TriploService } from '../../services/triplo/triplo.service';
+import { AssemblyService } from "../../services/assembly.service";
+
 
 @Component({
   selector: 'app-triplo',
@@ -13,7 +15,7 @@ export class TriploComponent implements OnInit {
 
   @Input() tokens = [];
 
-  constructor(private activatedRoute: ActivatedRoute, private triploService: TriploService) { }
+  constructor(private activatedRoute: ActivatedRoute, private triploService: TriploService, private assemblyService: AssemblyService) { }
 
   ngOnInit(): void {
   }
@@ -25,6 +27,8 @@ export class TriploComponent implements OnInit {
         const { prefixArray } = res.data;
         this.triploService.getTriplo(prefixArray).subscribe(async (triplo) => {
           const element = document.getElementById('download-triplo');
+          //========= ver que se imprima ===============
+          this.assemblyService.getAssemble(triplo.triploArr);
           await this.generarTxtTriplo(triplo.triploArr);
 
           element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(this.tablaTxt));
