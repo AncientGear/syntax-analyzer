@@ -33,19 +33,15 @@ export class TriploService {
   }
 
   getTriplo(prefix: any): Observable<any> {
-    console.log('get triplo');
-
     try {
       const headers = new HttpHeaders({
         'Content-Type': 'Application/json',
         'Access-Control-Allow-Origin': '*'
       });
-      console.log(prefix);
 
       const body = {
         prefix
       };
-      console.log(body);
 
       return this.http.post(`${environment.urlAPI}/api/triplo`, body, {
         headers

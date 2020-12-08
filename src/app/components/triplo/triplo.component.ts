@@ -24,6 +24,8 @@ export class TriploComponent implements OnInit {
       this.triploService.getPrefix(this.tokens).subscribe((res) => {
         const { prefixArray } = res.data;
         this.triploService.getTriplo(prefixArray).subscribe(async (triplo) => {
+          console.log(triplo);
+
           const element = document.getElementById('download-triplo');
           await this.generarTxtTriplo(triplo.triploArr);
 

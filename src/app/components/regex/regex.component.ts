@@ -179,7 +179,6 @@ export class RegexComponent implements OnInit {
 
     while (codeToCompare.match(/[\w$_["!#%&\/?='¡¿*΅~^`<>|°¬,-]+/)) {
 
-
       if (codeToCompare.length === 0) {
         await this.postSemiColon('', line, context);
         break;
