@@ -4,12 +4,10 @@ import {
 from '@angular/core';
 
 import { HttpClient } from '@angular/common/http';
+import { exit } from 'process';
 @Injectable({ providedIn: 'root' }) export class AssemblyService {
 
-    assembly: [];
-    possible = {
-
-	};
+    auxassembly= [];
 	cont = 0;
 
     constructor(private http: HttpClient) {}
@@ -17,7 +15,7 @@ import { HttpClient } from '@angular/common/http';
     getAssemble(triplo) {
         console.log(triplo);
 		triplo.forEach(trip => {	
-			console.log("line" , this.cont);
+			// console.log("line" , this.cont);
 					
 			switch (trip.op) {
 				case '>=':
@@ -30,7 +28,7 @@ import { HttpClient } from '@angular/common/http';
 					break;
 				case '=':
 					console.log("IGUAL");
-					// this.mov(trip);
+					this.mov(trip);
 					break;
 				case '+':
 					console.log("SUMA");
@@ -44,9 +42,33 @@ import { HttpClient } from '@angular/common/http';
 			}
 			this.cont ++;
 		});
+		console.log("action", this.auxassembly);	
 	}
 	
 	mov(trip){
-		
+		if(this.compto(trip.to) || this.compto(trip.to)){
+			console.log("ALGO VIENE MAL EN EL TRIPLO");			
+			return exit(0);
+		}
+		this.auxassembly.push('MOV AH,'+ trip.from);
+	}
+
+	compto(to){
+		switch (to) {
+			case 'TR1':
+				return true;
+			case 'TR2':
+				return true;
+			case 'TR3':
+				return true;	
+			case 'TR4':
+				return true;
+			case 'TR5':
+				return true;
+			case 'TR5':
+				return true;
+			default:
+				return false;
+		}
 	}
 }
