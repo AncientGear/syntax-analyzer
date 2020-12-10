@@ -33,19 +33,28 @@ export class TriploService {
   }
 
   getTriplo(prefix: any): Observable<any> {
+<<<<<<< HEAD
     // console.log('get triplo');
 
+=======
+>>>>>>> 89145394da42aa24a6e1c58c081d8f12a9561193
     try {
       const headers = new HttpHeaders({
         'Content-Type': 'Application/json',
         'Access-Control-Allow-Origin': '*'
       });
+<<<<<<< HEAD
       // console.log(prefix);
+=======
+>>>>>>> 89145394da42aa24a6e1c58c081d8f12a9561193
 
       const body = {
         prefix
       };
-      // console.log(body);
+<<<<<<< HEAD
+      console.log(body);
+=======
+>>>>>>> 89145394da42aa24a6e1c58c081d8f12a9561193
 
       return this.http.post(`${environment.urlAPI}/api/triplo`, body, {
         headers
