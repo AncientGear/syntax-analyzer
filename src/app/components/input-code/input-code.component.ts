@@ -52,27 +52,33 @@ export class InputCodeComponent implements OnInit {
   }
 
   optimizeCode() {
+    try {
+      for (let i = 0; i < this.code.length - 2; i++) {
+        let line = this.code[i].split(" ");
+        const aux1 = line[0];
+        const aux2 = line[1];
+        const aux3 = line[2];
+        let found = false;
 
-    for(let i = 0; i < this.code.length-2; i++) {
-      let line = this.code[i].split(" ");
-      const aux1 = line[0];
-      const aux2 = line[1];
-      const aux3 = line[2];
-      let found = false;
-
-      if(aux1.match(/^[\w]+/) && aux2.match(/^[\w$_["!#%&\/?'¡¿*΅~^`<>|°¬,;-]+/) && aux3 === '=') {
-        for(let j = i+1; j < this.code.length; j++) {
-          let auxLine = this.code[j];
-          if(auxLine.match(aux2)) {
-            found = true;
-            break;
+        if (aux1 && aux2 && aux3) {
+          if (aux1.match(/^[\w]+/) && aux2.match(/^[\w$_["!#%&\/?'¡¿*΅~^`<>|°¬,;-]+/) && aux3 === '=') {
+            for (let j = i + 1; j < this.code.length; j++) {
+              let auxLine = this.code[j];
+              if (auxLine.match(aux2)) {
+                found = true;
+                break;
+              }
+            }
+            if (!found) {
+              this.code.splice(i, 1 + i);
+            }
           }
         }
-        if(!found) {
-          this.code.splice(i,1+i);
-        }
       }
+    } catch (err) {
+      console.log(err);
     }
+
   }
 
   showTxtContent(contend: any) {
