@@ -175,7 +175,7 @@ export class RegexComponent implements OnInit {
     //
     wordToCompare = codeToCompare.match(/[\w]+/)[0];
     codeToCompare = codeToCompare.replace(wordToCompare, '');
-    await this.postIdentifier(wordToCompare, line, context, type);
+    await this.postIdentifier(wordToCompare, line, context, type, true);
 
     while (codeToCompare.match(/[\w$_["!#%&\/?='¡¿*΅~^`<>|°¬,-]+/)) {
 
@@ -437,14 +437,14 @@ export class RegexComponent implements OnInit {
     }
   }
 
-  async postIdentifier(wordToCompare: string, line: number, context: number, type?: string) {
+  async postIdentifier(wordToCompare: string, line: number, context: number, type?: string, declaration?: boolean) {
 
     if (Number(wordToCompare) || type === 'int' || type === 'float') {
       type = 'number';
     }
 
     if (wordToCompare.match(this.vairablesRegEx)) {
-      await this.generateToken('identifier', wordToCompare, line, context, true, type);
+      await this.generateToken('identifier', wordToCompare, line, context, true, type, declaration);
     } else {
       await this.generateToken('identifier', wordToCompare, line, context);
     }
@@ -482,7 +482,7 @@ export class RegexComponent implements OnInit {
     return this.possibleTokens.dataTypes.options.indexOf(String(type[0]));
   }
 
-  async generateToken(code: string, lexeme: string, line: number, context: number, accept?: boolean, dataType?: string) {
+  async generateToken(code: string, lexeme: string, line: number, context: number, accept?: boolean, dataType?: string, declaration?: boolean) {
     const option = this.possibleTokens[`${code}`];
 
     let newToken;
@@ -511,7 +511,8 @@ export class RegexComponent implements OnInit {
           token: `${option.id}${option.counter}`,
           id: option.id,
           context,
-          dataType: dataType || 'undefined'
+          dataType: dataType || 'undefined',
+          declaration
         };
 
         this.tokensForTxt.push(`${option.id}${option.counter}`);
