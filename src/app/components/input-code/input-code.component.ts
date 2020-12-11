@@ -70,7 +70,8 @@ export class InputCodeComponent implements OnInit {
               }
             }
             if (!found) {
-              this.code.splice(i, 1 + i);
+              this.code.splice(i, 1);
+              i--
             }
           }
         }
