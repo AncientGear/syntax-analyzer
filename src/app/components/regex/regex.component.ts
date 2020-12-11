@@ -248,8 +248,7 @@ export class RegexComponent implements OnInit {
     codeToCompare = codeToCompare.replace(wordToCompare, '');
 
     wordToCompare = codeToCompare.match(/^[\a-zA-Z$_(){}["!#%&?'¡¿*΅~^`<>|°¬-]*=/)[0];
-    codeToCompare = codeToCompare.replace(wordToCompare, '');
-
+    codeToCompare = codeToCompare.replace(wordToCompare, '')
 
     await this.postAssignation(wordToCompare, line, context);
 
