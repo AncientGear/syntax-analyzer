@@ -88,6 +88,9 @@ export class RegexComponent implements OnInit {
   ngOnInit(): void { }
 
   async keepCode(code: any) {
+    console.log(1);
+
+    console.log(code);
 
     this.code = code;
     this.tokens = [];

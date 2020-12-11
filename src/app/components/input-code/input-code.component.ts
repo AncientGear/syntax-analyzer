@@ -7,6 +7,7 @@ import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 })
 export class InputCodeComponent implements OnInit {
   code = [];
+  codeTxt = "";
   tokensForTxt = [];
   tokens = [];
   tokenErrors = [];
@@ -48,6 +49,18 @@ export class InputCodeComponent implements OnInit {
       }
     }
     this.optimizeCode();
+    this.codeTxt = "";
+    console.log(this.code);
+
+    for (let i = 0; i < this.code.length; i++) {
+      this.codeTxt += this.code[i];
+      this.codeTxt += "\n"
+    }
+    console.log(this.codeTxt);
+
+    const element = document.getElementById('download-code');
+
+    element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(this.codeTxt));
     this.sendCode.emit(this.code);
   }
 

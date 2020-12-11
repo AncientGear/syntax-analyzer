@@ -1,6 +1,8 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { TriploService } from '../../services/triplo/triplo.service';
+import { AssemblyService } from "../../services/assembly.service";
+
 
 @Component({
   selector: 'app-triplo',
@@ -10,31 +12,35 @@ import { TriploService } from '../../services/triplo/triplo.service';
 export class TriploComponent implements OnInit {
 
   tablaTxt = '';
-  
+  tablaAssembly = '';
 
   @Input() tokens = [];
 
-  constructor(private activatedRoute: ActivatedRoute, private triploService: TriploService) { }
+  constructor(private activatedRoute: ActivatedRoute, private triploService: TriploService, private assemblyService: AssemblyService) { }
 
   ngOnInit(): void {
   }
 
   download() {
     this.tablaTxt = '';
+    this.tablaAssembly = '';
     this.activatedRoute.params.subscribe((params) => {
       this.triploService.getPrefix(this.tokens).subscribe((res) => {
         const { prefixArray } = res.data;
         this.triploService.getTriplo(prefixArray).subscribe(async (triplo) => {
-          console.log(triplo);
-
           const element = document.getElementById('download-triplo');
-          await this.generarTxtTriplo(triplo.triploArr);
+          console.log(triplo.triploArr);
 
+          //========= ver que se imprima ===============
+          this.tablaAssembly = this.assemblyService.getAssemble(triplo.triploArr);
+          await this.generarTxtTriplo(triplo.triploArr);
           element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(this.tablaTxt));
+
+          this.tablaAssembly = this.assemblyService.getAssemble(this.tokens);
 
           const element2 = document.getElementById('download-assembly');
 
-          element2.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(this.tablaTxt));
+          element2.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(this.tablaAssembly));
         });
       });
     });
