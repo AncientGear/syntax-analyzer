@@ -17,7 +17,9 @@ import { HttpClient } from '@angular/common/http';
     constructor(private http: HttpClient) {}
 
     getAssemble(triplo) {
-		console.log(triplo);
+    console.log(triplo);
+    this.auxassembly = [];
+    this.assembly = '';
 		var compara = 0, mayor = 0, mayorigual = 0;
 		triplo.forEach(trip => {
 			// console.log("line" , this.linea);
