@@ -29,7 +29,7 @@ export class TriploComponent implements OnInit {
         const { prefixArray } = res.data;
         this.triploService.getTriplo(prefixArray).subscribe(async (triplo) => {
           const element = document.getElementById('download-triplo');
-          console.log(triplo.triploArr);
+          console.log('triplo.triploArr',triplo.triploArr);
 
           //========= ver que se imprima ===============
           this.tablaAssembly = this.assemblyService.getAssemble(triplo.triploArr);

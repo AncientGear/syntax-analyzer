@@ -13,11 +13,13 @@ import { HttpClient } from '@angular/common/http';
 	divi = false;
 	modul = false;
 	assembly = '';
+	valor = false;
+	temporales = '';
 
     constructor(private http: HttpClient) {}
 
     getAssemble(triplo) {
-		console.log(triplo);
+		console.log('triplo\n',triplo);
 		var compara = 0, mayor = 0, mayorigual = 0;
 		triplo.forEach(trip => {
 			// console.log("line" , this.linea);
@@ -72,7 +74,7 @@ import { HttpClient } from '@angular/common/http';
 					mayorigual = 2;
 					break;
 				default:
-					if(Number.parseInt(trip.op)){
+					if(Number.parseInt(trip.pos)){
 						if(trip.from === 'JMP' || trip.to === 'JMP' || trip.id === 'JMP'){
 							this.salto(trip);
 						}
@@ -92,17 +94,25 @@ import { HttpClient } from '@angular/common/http';
 			this.linea++;
 		});
 		this.etiquetas();
-		console.log("auxssembly", this.auxassembly);
+		// console.log("auxssembly", this.auxassembly);
 		this.elavoraString()
 		console.log("Assembly \n", this.assembly);
 		return this.assembly;
 	}
 
 	mov(trip){
-		if(this.compto(trip.to) || this.compto(trip.to)){
-			console.log("ALGO VIENE MAL EN EL TRIPLO");
+		if(this.compfrom(trip.to) && !this.compfrom(trip.from) && !this.valor){
+			this.auxassembly.push({linea : this.linea, msg: `MOV AX, ${trip.from};`});
+			this.valor = true;
+			// this.auxassembly.push({linea : this.linea, msg: `MOV ${trip.to}, AL;`})
 		}
-		else if(this.compfrom(trip.from) && !this.compfrom(trip.to)){
+		else  if(this.valor){
+			// this.auxassembly.push({linea : this.linea, msg: `MOV AX, ${trip.from};`});
+			this.auxassembly.push({linea : this.linea, msg: `MOV ${trip.from}, AX;`})
+			this.valor = false;
+			this.temporales = `${trip.from}`;
+		}
+		else if(this.compfrom(trip.to) && !this.compfrom(trip.from)){
 			if(this.multi){
 				this.auxassembly.push({linea : this.linea, msg: `MOV ${trip.to}, AX;`})
 				this.multi = false
@@ -116,10 +126,10 @@ import { HttpClient } from '@angular/common/http';
 				this.divi = false;
 			}
 			else
-			this.auxassembly.push({linea : this.linea, msg: `MOV ${trip.to}, AL;`})
+			this.auxassembly.push({linea : this.linea, msg: `MOV AL, ${trip.to},;`})
 		}
 		else
-		this.auxassembly.push({linea : this.linea, msg: `MOV AX, ${trip.from};`});
+			this.auxassembly.push({linea : this.linea, msg: `MOV AX, ${trip.from};`});
 	}
 	mul(trip){
 		var temp = this.auxassembly[this.auxassembly.length - 1].msg.split(" ");
@@ -139,15 +149,16 @@ import { HttpClient } from '@angular/common/http';
 		this.auxassembly.push({linea : this.linea, msg: `${string} AX, ${trip.to};`});
 	}
 	CMP(trip){
-		this.auxassembly.push({linea : this.linea, msg: `CMP AX, ${trip.from};`});
+		this.auxassembly.push({linea : this.linea, msg: `CMP AX, ${this.temporales};`});
+		this.temporales = '';
 	}
 	comparacion(trip, string){
 		if(trip.from === 'FALSE' || trip.from === 'false'){
-			this.auxassembly.push({linea : this.linea, msg: `JMP ET${trip.op};`});
-			this.generaEtiq.push(trip.op);
+			this.auxassembly.push({linea : this.linea, msg: `JMP ET${trip.pos+1};`});
+			this.generaEtiq.push(trip.pos+1);
 		}else if(trip.from === 'TRUE' || trip.from === 'true'){
-			this.auxassembly.push({linea : this.linea, msg: `${string} ET${trip.op};`});
-			this.generaEtiq.push(trip.op);
+			this.auxassembly.push({linea : this.linea, msg: `${string} ET${trip.pos-3};`});
+			this.generaEtiq.push(trip.pos-3);
 		}else
 			console.log('AQUI PASO ALGO');
 	}

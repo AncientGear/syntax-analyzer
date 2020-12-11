@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  urlAPI: 'https://triplo-api.herokuapp.com'
+  urlAPI: 'http://localhost:3000'
 };
