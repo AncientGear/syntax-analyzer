@@ -30,13 +30,11 @@ export class TriploComponent implements OnInit {
         this.triploService.getTriplo(prefixArray).subscribe(async (triplo) => {
           const element = document.getElementById('download-triplo');
 
-          //========= ver que se imprima ===============
-          this.tablaAssembly = this.assemblyService.getAssemble(triplo.triploArr);
           await this.generarTxtTriplo(triplo.triploArr);
           element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(this.tablaTxt));
 
+          this.tablaAssembly = "";
           this.tablaAssembly = this.assemblyService.getAssemble(this.tokens);
-
           const element2 = document.getElementById('download-assembly');
 
           element2.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(this.tablaAssembly));
