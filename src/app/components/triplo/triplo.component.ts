@@ -12,6 +12,7 @@ import { AssemblyService } from "../../services/assembly.service";
 export class TriploComponent implements OnInit {
 
   tablaTxt = '';
+  tablaAssembly
 
   @Input() tokens = [];
 
@@ -28,10 +29,11 @@ export class TriploComponent implements OnInit {
         this.triploService.getTriplo(prefixArray).subscribe(async (triplo) => {
           const element = document.getElementById('download-triplo');
           //========= ver que se imprima ===============
-          this.assemblyService.getAssemble(triplo.triploArr);
+          this.tablaAssembly = this.assemblyService.getAssemble(triplo.triploArr);
           await this.generarTxtTriplo(triplo.triploArr);
-
           element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(this.tablaTxt));
+          const element2 = document.getElementById('download-assembly');
+          element2.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(this.tablaAssembly));
         });
       });
     });
