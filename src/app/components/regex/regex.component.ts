@@ -510,8 +510,7 @@ export class RegexComponent implements OnInit {
           token: `${option.id}${option.counter}`,
           id: option.id,
           context,
-          dataType: dataType || 'undefined',
-          declaration
+          dataType: dataType || 'undefined'
         };
 
         this.tokensForTxt.push(`${option.id}${option.counter}`);

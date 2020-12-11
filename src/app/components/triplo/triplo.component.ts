@@ -10,6 +10,7 @@ import { TriploService } from '../../services/triplo/triplo.service';
 export class TriploComponent implements OnInit {
 
   tablaTxt = '';
+  
 
   @Input() tokens = [];
 
@@ -30,6 +31,10 @@ export class TriploComponent implements OnInit {
           await this.generarTxtTriplo(triplo.triploArr);
 
           element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(this.tablaTxt));
+
+          const element2 = document.getElementById('download-assembly');
+
+          element2.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(this.tablaTxt));
         });
       });
     });
