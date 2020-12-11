@@ -20,7 +20,7 @@ import { HttpClient } from '@angular/common/http';
 
     getAssemble(triplo) {
 		console.log('triplo\n',triplo);
-		var compara = 0, mayor = 0, mayorigual = 0;
+		var compara = 0, mayor = 0, mayorigual = 0; this.linea = 0;
 		triplo.forEach(trip => {
 			// console.log("line" , this.linea);
 			switch (trip.op) {
@@ -74,7 +74,7 @@ import { HttpClient } from '@angular/common/http';
 					mayorigual = 2;
 					break;
 				default:
-					if(Number.parseInt(trip.pos)){
+					if(Number.parseInt(trip.pos) || Number.parseInt(trip.op)){
 						if(trip.from === 'JMP' || trip.to === 'JMP' || trip.id === 'JMP'){
 							this.salto(trip);
 						}
@@ -94,7 +94,8 @@ import { HttpClient } from '@angular/common/http';
 			this.linea++;
 		});
 		this.etiquetas();
-		// console.log("auxssembly", this.auxassembly);
+		console.log("auxssembly", this.auxassembly);
+		this.assembly = '';
 		this.elavoraString()
 		console.log("Assembly \n", this.assembly);
 		return this.assembly;
@@ -154,11 +155,11 @@ import { HttpClient } from '@angular/common/http';
 	}
 	comparacion(trip, string){
 		if(trip.from === 'FALSE' || trip.from === 'false'){
-			this.auxassembly.push({linea : this.linea, msg: `JMP ET${trip.pos+1};`});
-			this.generaEtiq.push(trip.pos+1);
+			this.auxassembly.push({linea : this.linea, msg: `JMP ET${trip.op};`});
+			this.generaEtiq.push(trip.op);
 		}else if(trip.from === 'TRUE' || trip.from === 'true'){
-			this.auxassembly.push({linea : this.linea, msg: `${string} ET${trip.pos-3};`});
-			this.generaEtiq.push(trip.pos-3);
+			this.auxassembly.push({linea : this.linea, msg: `${string} ET${trip.op};`});
+			this.generaEtiq.push(trip.op);
 		}else
 			console.log('AQUI PASO ALGO');
 	}
@@ -222,7 +223,7 @@ import { HttpClient } from '@angular/common/http';
 	}
 
 	elavoraString(){
-		this.assembly += `#  Etiqueta\tCodigo\n`
+		this.assembly += `#  Etiqueta\tCodigo\n`;
 		this.auxassembly.forEach(element => {
 			if(element.etique)
 				this.assembly += `${element.linea}\t${element.etique}\t${element.msg}\n`
